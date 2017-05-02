@@ -92,3 +92,37 @@ P3  <- ev3$vectors
 D3 <- P3 %*% t(D3)
 X_3pca <- as.data.frame(t(D3)) 
 pairs(X_3pca)
+
+
+
+## c) ##
+
+D3 <- pcaData3d - M3_mean
+
+# convert df to matrix
+D3 <- as.matrix(D3)
+
+# compute Covariance Matrix C
+C3 <- (n_3-1)^-1 * t(D3) %*% D3
+
+eigen_vals <- eigen(C3)$values
+eigen_vecs <- eigen(C3)$vectors
+
+# compute pc scores
+#pc_scores <- prcomp(D3)
+
+pc_scores_1 <- D3 %*% eigen_vecs[, 1]
+pc_scores_1_2 <- D3 %*% eigen_vecs[, 1:2]
+pc_scores_1_2_3 <- D3 %*% eigen_vecs[, 1:3]
+
+
+pca_reconstruction_1 <- pc_scores_1 %*% t(eigen_vecs[, 1])
+pairs(pca_reconstruction_1)
+
+pca_reconstruction_1_2 <- pc_scores_1_2 %*% t(eigen_vecs[, 1:2])
+pairs(pca_reconstruction_1_2)
+
+pca_reconstruction_1_2_3 <- pc_scores_1_2_3 %*% t(eigen_vecs[, 1:3])
+pairs(pca_reconstruction_1_2_3)
+
+# for reconstruction of uncentered data, add mean veactor to each column (add M3)

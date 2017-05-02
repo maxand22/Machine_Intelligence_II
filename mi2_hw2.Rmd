@@ -1,0 +1,261 @@
+---
+title: "mi2_hw2"
+author: "Nikolas Höft"
+date: "26 4 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Machine Intelligence 2 Homework 1
+
+
+
+```{r, warning=FALSE, message=FALSE, error=FALSE}
+# load packages
+#install.packages("imager")
+library(imager)
+
+#install.packages("foreign")
+library(foreign)
+
+#install.packages("gridExtra")
+library(gridExtra)
+
+#install.packages("ggplot2")
+library(ggplot2)
+
+#install.packages("reshape2")
+library(reshape2)
+
+#install.packages("colorRamps")
+library(colorRamps)
+
+#setwd("~/Desktop/Uni/Statistik Master/courses/machine intelligence 2/data/natIMG.jpeg")
+
+```
+
+```{r}
+# 2.1 a)
+
+# load data
+pcaData2d <- read.csv("Ex2/pca-data-2d.txt", sep = "", header = FALSE)
+
+# calcualte mean matrix
+n <- nrow(pcaData2d)
+M_mean <- matrix(data=1, nrow=n) %*% cbind(mean(pcaData2d[,1]),
+                                           mean(pcaData2d[,2]))
+
+# subtract mean from data set -> "Difference Matrix"
+pcaData2d_cen <- pcaData2d - M_mean
+
+# plot centered matrix
+ggplot(pcaData2d_cen, aes(x=pcaData2d_cen$V1, y=pcaData2d_cen$V2)) + geom_point()
+```
+
+
+```{r}
+# 2.1 b)
+
+# convert df to matrix
+D <- as.matrix(pcaData2d_cen)
+
+# compute Covariance Matrix C
+C <- (n-1)^-1 * t(D) %*% D
+
+# Eigenvalues of C, Eigenvectors in P
+ev <- eigen(C)
+P  <- ev$vectors
+
+# transform D
+D_tr <- P %*% t(D)
+
+# in ggplot2 plottable data frame
+X_pca <- as.data.frame(t(D_tr)) 
+
+# plot of the transformed set
+ggplot(X_pca, aes(x=X_pca$V1, y=X_pca$V2)) + geom_point()
+```
+
+```{r}
+# 2.1 c)
+
+
+# plot only PC1 
+ggplot(X_pca, aes(x=X_pca$V1, y=0)) + geom_point()
+
+# plot only PC2
+ggplot(X_pca, aes(x=0, y= X_pca$V2)) + geom_point()
+```
+
+```{r}
+# 2.2 a)
+
+
+# load data set
+pcaData3d <- read.csv("Ex2/pca-data-3d.txt")
+
+# centering
+n_3 <- nrow(pcaData3d)
+M3_mean <- matrix(data=1, nrow=n_3) %*% colMeans(pcaData3d)
+
+# subtract mean from data set -> "Difference Matrix"
+D3 <- pcaData3d - M3_mean
+
+# scatterplot matrix
+pairs(D3)
+```
+
+```{r}
+# 2.2 b)
+
+# convert df to matrix
+D3 <- as.matrix(D3)
+
+# compute Covariance Matrix C
+C3 <- (n_3-1)^-1 * t(D3) %*% D3
+
+# Eigenvalues of C3, Eigenvectors in P3
+ev3 <- eigen(C3)
+P3  <- ev3$vectors
+
+# transform D3
+D3 <- P3 %*% t(D3)
+X_3pca <- as.data.frame(t(D3)) 
+pairs(X_3pca)
+```
+
+```{r}
+# 2.2 c)
+
+
+D3 <- pcaData3d - M3_mean
+
+# convert df to matrix
+D3 <- as.matrix(D3)
+
+# compute Covariance Matrix C
+C3 <- (n_3-1)^-1 * t(D3) %*% D3
+
+eigen_vals <- eigen(C3)$values
+eigen_vecs <- eigen(C3)$vectors
+
+# compute pc scores
+#pc_scores <- prcomp(D3)
+
+pc_scores_1 <- D3 %*% eigen_vecs[, 1]
+pc_scores_1_2 <- D3 %*% eigen_vecs[, 1:2]
+pc_scores_1_2_3 <- D3 %*% eigen_vecs[, 1:3]
+
+
+pca_reconstruction_1 <- pc_scores_1 %*% t(eigen_vecs[, 1])
+pairs(pca_reconstruction_1, main = "PCs for reconstruction: 1")
+
+pca_reconstruction_1_2 <- pc_scores_1_2 %*% t(eigen_vecs[, 1:2])
+pairs(pca_reconstruction_1_2, main = "PCs for reconstruction: 1, 2")
+
+pca_reconstruction_1_2_3 <- pc_scores_1_2_3 %*% t(eigen_vecs[, 1:3])
+pairs(pca_reconstruction_1_2_3, main = "PCs for reconstruction: 1, 2, 3")
+
+# for reconstruction of uncentered data, add mean veactor to each column (add M3)
+```
+
+** Interpretation**
+Obviously, the first two PCs are useful here. Plotting only the first PC alone 
+does not yield a lot of information, only about the spread in this direction. 
+When taking into account the first two PCs, one can see the (possibly) sinusoidal
+trend in the data. Using all three PCs yields the original centered COV matrix
+that was plotted in 2.2 a). This is oubvious because due to the orthonormality
+of the eigenvectors eigen_vecs %*% t(eigen_vecs) will yield an identity matrix,
+hence, when multiplying this matrix with the centered COV matrix D3, the COV
+matrix remains unchanged.
+
+
+```{r}
+# 2.3 a)
+
+# load data
+expDat <- read.csv("Ex2/expDat.txt", sep = ",", header = TRUE)
+
+# calculate mean matrix
+n <- nrow(expDat[2:ncol(expDat)])
+M_mean <- matrix(data=1, nrow=n) %*% colMeans(expDat[2:ncol(expDat)])
+# subtract mean from data set 
+expDat_cen <- expDat[2:ncol(expDat)] - M_mean
+
+# convert df to matrix
+D <- as.matrix(expDat_cen)
+# compute Covariance Matrix C
+C <- (n-1)^-1 * t(D) %*% D
+# Eigenvalues of C, Eigenvectors in P
+ev <- eigen(C)
+P  <- ev$vectors
+
+```
+
+
+
+```{r}
+# 2.3 b)
+
+# transform D
+D_tr <- P %*% t(D)
+# in ggplot2 plottable data frame
+X_pca <- as.data.frame(t(D_tr)) 
+
+#scatter plot
+ggplot(X_pca, aes(x=X_pca$V1, y=X_pca$V2)) + scale_colour_gradient(low = "red", high = "blue") + geom_point(aes(colour=1:100))
+
+
+#line plot
+df <- data.frame(expDat[,1], X_pca$V1, X_pca$V2)
+colnames(df)[1] <- "time_index"
+
+ggplot(df, aes(x=time_index, y=value)) + 
+    scale_colour_gradient(low = "red", high = "blue") + 
+    geom_line(aes(y=X_pca$V1, colour=1:100)) + 
+    geom_line(aes(y=X_pca$V2,colour=1:100))
+
+
+```
+
+```{r}
+# 2.3 c)
+
+newDat <- apply(expDat[2:21], 2, sample)
+```
+
+```{r}
+# 2.3 d)
+
+# shuffled dataset
+# calculate mean matrix of new data set
+n_new <- nrow(newDat)
+M_mean_new <- matrix(data=1, nrow=n_new) %*% colMeans(newDat)
+# subtract new mean from shuffled data set
+Dat_cen_new <- newDat - M_mean_new
+# compute Covariance Matrix C_new 
+C_new <- (n_new-1)^-1 * t(Dat_cen_new) %*% Dat_cen_new
+```
+
+**2.3 e)** 
+
+Shuffeling the data rowwise in the same sequence for all columns does not affect
+the resulting covariance matrix. This is easy to see without programming, since
+both, variances and covariances are based on element-wise sums of squared errors. 
+For summing over a number of elements, the order is not relevant. Therefore, the 
+variances remain unchanged even if the data was not shuffeled in the same sequence
+since they do not depend on the values of other variables.
+However, for the covariances this is important because otherwise the relationship
+between the features would change. But here, since the rows 
+are shuffeled in the same way for all columns (i.e. features), the relationships 
+(covariances) between the features remain the same as well.
+
+
+```{r}
+# 2.4 a)
+
+```
+

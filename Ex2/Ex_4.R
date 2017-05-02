@@ -1,25 +1,27 @@
-install.packages("imager")
+#install.packages("imager")
 library(imager)
 
-install.packages("foreign")
+#install.packages("foreign")
 library(foreign)
 
-install.packages("gridExtra")
-library("gridExtra")
+#install.packages("gridExtra")
+library(gridExtra)
 
-install.packages("ggplot2")
+#install.packages("ggplot2")
 library(ggplot2)
 
-install.packages("reshape2")
+#install.packages("reshape2")
 library(reshape2)
 
-install.packages("colorRamps")
+#install.packages("colorRamps")
 library(colorRamps)
 
 ###############################################################################
 
 #2.4.a Buildings
-path <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/Ex2/imgpca"
+#path <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/Ex2/imgpca"
+
+path <- "/Users/Niko/Desktop/Uni/Statistik Master/courses/machine intelligence 2/mi2_homework/mi2_homework/Ex2/imgpca"
 
 f <- file.path(path, c("b1.jpg","b2.jpg", "b3.jpg", "b4.jpg", "b5.jpg", "b6.jpg", "b7.jpg", "b8.jpg", "b9.jpg", "b9_2.jpg","b9_4.jpg","b9_8.jpg","b9_16.jpg","b10.jpg"))
 
@@ -56,7 +58,9 @@ for(i in 1:length(f)){
 
 
 #2.4.a Nature
-pathn <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/Ex2/imgpca"
+#pathn <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/Ex2/imgpca"
+
+pathn <- "/Users/Niko/Desktop/Uni/Statistik Master/courses/machine intelligence 2/mi2_homework/mi2_homework/Ex2/imgpca"
 
 fn <- file.path(pathn, c("n1.jpg","n2.jpg", "n3.jpg", "n4.jpg", "n5.jpg", "n6.jpg", "n7.jpg", "n8.jpg", "n9.jpg", "n10.jpg","n11.jpg","n12.jpg","n13.jpg"))
 
@@ -168,7 +172,7 @@ similar <- table(c)["TRUE"]/table(c)["FALSE"]
 #3. The PCs correlate more based on picture 9 of the building set.Picture 9 is several times part of the observations
 
 
-#2.3.c
+#2.4.c
 #calculating eigenvalues
 ev <- data.frame(
   value = pca_matrix$sdev^2,
