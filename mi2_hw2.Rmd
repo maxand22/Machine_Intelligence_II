@@ -164,13 +164,16 @@ pairs(pca_reconstruction_1_2_3, main = "PCs for reconstruction: 1, 2, 3")
 
 ** Interpretation**
 Obviously, the first two PCs are useful here. Plotting only the first PC alone 
-does not yield a lot of information, only about the spread in this direction. 
+does not yield a lot of information (only about the spread in this direction). 
 When taking into account the first two PCs, one can see the (possibly) sinusoidal
 trend in the data. Using all three PCs yields the original centered COV matrix
 that was plotted in 2.2 a). This is oubvious because due to the orthonormality
 of the eigenvectors eigen_vecs %*% t(eigen_vecs) will yield an identity matrix,
 hence, when multiplying this matrix with the centered COV matrix D3, the COV
-matrix remains unchanged.
+matrix remains unchanged. However, one could argue that including the third PC
+adds too much noise to the data and the trends are harder to detect in the 
+scatter plot matrix. Therefore, the first two PCs should be chosen. Looking
+at the eigenvalues supports this.
 
 
 ```{r}
