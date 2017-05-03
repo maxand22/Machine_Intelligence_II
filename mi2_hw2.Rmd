@@ -196,6 +196,9 @@ C <- (n-1)^-1 * t(D) %*% D
 ev <- eigen(C)
 P  <- ev$vectors
 
+
+# print PCs
+print(P)
 ```
 
 
@@ -241,7 +244,43 @@ M_mean_new <- matrix(data=1, nrow=n_new) %*% colMeans(newDat)
 Dat_cen_new <- newDat - M_mean_new
 # compute Covariance Matrix C_new 
 C_new <- (n_new-1)^-1 * t(Dat_cen_new) %*% Dat_cen_new
+
+
+
+# convert cov matrizes to data frame for easier plotting
+C_melted <- melt(C)
+C_melted_new <- melt(C_new)
+
+# plot heatmaps
+ggplot(data = C_melted, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+
+ggplot(data = C_melted_new, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+
+
+# scree plots
+
+eigenvalues_original <- eigen(scale(C, center = TRUE))$values
+eigenvalues_scrambled <- eigen(scale(C_new, center = TRUE))$values
+
+par(mfrow = c(1, 2))
+plot(1: length(eigenvalues_original), eigenvalues_original, 
+     main = "Original data", xlab = "eigenvalue number", ylab = "eigenvalue")
+plot(1: length(eigenvalues_scrambled), eigenvalues_scrambled, 
+     main = "Scrambled data", xlab = "eigenvalue number", ylab = "eigenvalue")
+
+dev.off()
+
+
 ```
+
+**Interpretation**
+Due to the scrambling of the data, the PC structure is a lot less clear in the 
+second plot, i.e. the decline of the eigenvalues is a lot more shallow compared to the plot of the original data, where the first eigenvalue is by far the largest. 
+This is plausibe, since the data got randomized, i.e.the resulting covariance 
+matrix is random as well.
+
 
 **2.3 e)** 
 
@@ -393,8 +432,7 @@ variance while the second PC from the nature images only accounts for about
 
 
 ```{r}
-# c)
-
+# 2.4 c)
 
 eigenvalues_b <- eigen(cov(total_matrix_b_centered))$values
 plot(1:256, eigenvalues_b, main = "Scree Plot Buildings")
@@ -404,7 +442,7 @@ cov_b <- cov(total_matrix_b)
 
 
 eigenvalues_n <- eigen(cov(total_matrix_n_centered))$values
-plot(1:256, eigenvalues_n, main = "Scree Plot Buildings")
+plot(1:256, eigenvalues_n, main = "Scree Plot Nature")
 ```
 
 **Buildings**
@@ -413,7 +451,11 @@ Because of high eigenvalue and before the elobow of the Curve. Based on the
 Kaiser criterion (extract PCs with eigenvalues > 1) we would extract the first 
 two PCs.
 
+compression ratio: 4/256
+
 **Nature**
 Based on the scree plot we would choose the first 3 PCs for the nature images.
 Because of high eigenvalue and before the elobow of the Curve. Based on the 
 Kaiser criterion (see above) we would even extract only the first PC
+
+compression ratio: 3/256

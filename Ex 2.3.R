@@ -96,6 +96,18 @@ plot(prop_varex_new, type = "b")
 
 
 
+eigenvalues_original <- eigen(scale(C, center = TRUE))$values
+eigenvalues_scrambled <- eigen(scale(C_new, center = TRUE))$values
+
+par(mfrow = c(1, 2))
+plot(1: length(eigenvalues_original), eigenvalues_original, 
+     main = "Original data", xlab = "eigenvalue number", ylab = "eigenvalue")
+plot(1: length(eigenvalues_scrambled), eigenvalues_scrambled, 
+     main = "Scrambled data", xlab = "eigenvalue number", ylab = "eigenvalue")
+
+dev.off()
+
+
 # e) 
 
 # Shuffeling the data rowwise in the same sequence for all columns does not affect
