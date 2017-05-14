@@ -138,3 +138,27 @@ ggplot(data = heatmap_data3, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() + 
     scale_fill_continuous(low = "white", high = "#b30000") + 
     ggtitle("Covariance matrix of whitened data")
+
+
+
+
+
+# 3.4
+
+online_pca <- read.csv("hw3/data/data-onlinePCA.txt", sep = ",", header = TRUE)
+online_pca$group <- factor(rep(1:10, each = 200))
+
+cols <- c("#313695", "#4575b4", "#74add1", "#abd9e9", "#e0f3f8", "#fee090", "#fdae61", "#f46d43", "#d73027", "#a50026")
+
+ggplot(online_pca, aes(x = V1, y = V2, col = group)) + 
+    geom_point(size = 1.5) +
+    scale_color_manual(values = cols) +
+    labs(col   = "Time index (s)",
+         x     = "V1",
+         y     = "V2",
+         title = "") +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.key       = element_rect(colour = "black"),
+          plot.title       = element_text(face = "bold", hjust = 0.5))
