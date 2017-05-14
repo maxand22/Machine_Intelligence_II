@@ -143,15 +143,14 @@ ggplot(data = heatmap_data3, aes(x=Var1, y=Var2, fill=value)) +
 
 
 
-# 3.4
+# 3.4.1
 
 online_pca <- read.csv("hw3/data/data-onlinePCA.txt", sep = ",", header = TRUE)
 online_pca$group <- factor(rep(1:10, each = 200))
 
 cols <- c("#313695", "#4575b4", "#74add1", "#abd9e9", "#e0f3f8", "#fee090", "#fdae61", "#f46d43", "#d73027", "#a50026")
 
-ggplot(online_pca, aes(x = V1, y = V2, col = group)) + 
-    geom_point(size = 1.5) +
+p <- ggplot(online_pca, aes(x = V1, y = V2, col = group)) + 
     scale_color_manual(values = cols) +
     labs(col   = "Time index (s)",
          x     = "V1",
@@ -162,3 +161,131 @@ ggplot(online_pca, aes(x = V1, y = V2, col = group)) +
           panel.grid.minor = element_blank(),
           legend.key       = element_rect(colour = "black"),
           plot.title       = element_text(face = "bold", hjust = 0.5))
+
+p + geom_point(size = 1.5)
+
+# 3.4.2
+
+
+pc1 <- pce(subset(online_pca, online_pca$group == 1, select=c("V1","V2")))[,1]
+pc2 <- pce(subset(online_pca, online_pca$group == 2, select=c("V1","V2")))[,1]
+pc3 <- pce(subset(online_pca, online_pca$group == 3, select=c("V1","V2")))[,1]
+pc4 <- pce(subset(online_pca, online_pca$group == 4, select=c("V1","V2")))[,1]
+pc5 <- pce(subset(online_pca, online_pca$group == 5, select=c("V1","V2")))[,1]
+pc6 <- pce(subset(online_pca, online_pca$group == 6, select=c("V1","V2")))[,1]
+pc7 <- pce(subset(online_pca, online_pca$group == 7, select=c("V1","V2")))[,1]
+pc8 <- pce(subset(online_pca, online_pca$group == 8, select=c("V1","V2")))[,1]
+pc9 <- pce(subset(online_pca, online_pca$group == 9, select=c("V1","V2")))[,1]
+pc10 <- pce(subset(online_pca, online_pca$group == 10, select=c("V1","V2")))[,1]
+
+# plot pc1 to pc10 in scatter plot
+#p <- ggplot(online_pca, aes(x = V1, y = V2, color=online_pca$group)) + geom_point() + scale_color_brewer(palette="Spectral")
+
+p_a <- (p + geom_point(size = 1.5, alpha = .5) 
+        + geom_segment(aes(x=0, y=0), xend=pc1[1], yend=pc1[2], arrow=arrow(), size=1, color=cols[1])
+        + geom_segment(aes(x=0, y=0), xend=pc2[1], yend=pc2[2], arrow=arrow(), size=1, color=cols[2])
+        + geom_segment(aes(x=0, y=0), xend=pc3[1], yend=pc3[2], arrow=arrow(), size=1, color=cols[3])
+        + geom_segment(aes(x=0, y=0), xend=pc4[1], yend=pc4[2], arrow=arrow(), size=1, color=cols[4])
+        + geom_segment(aes(x=0, y=0), xend=pc5[1], yend=pc5[2], arrow=arrow(), size=1, color=cols[5])
+        + geom_segment(aes(x=0, y=0), xend=pc6[1], yend=pc6[2], arrow=arrow(), size=1, color=cols[6])
+        + geom_segment(aes(x=0, y=0), xend=pc7[1], yend=pc7[2], arrow=arrow(), size=1, color=cols[7])
+        + geom_segment(aes(x=0, y=0), xend=pc8[1], yend=pc8[2], arrow=arrow(), size=1, color=cols[8])
+        + geom_segment(aes(x=0, y=0), xend=pc9[1], yend=pc9[2], arrow=arrow(), size=1, color=cols[9])
+        + geom_segment(aes(x=0, y=0), xend=pc10[1], yend=pc10[2], arrow=arrow(), size=1, color=cols[10]))
+
+p_a 
+
+
+
+# 3.4.3
+
+#ojas_rule <- function(data, e){
+#    w = c(0.001, 0.001)
+#    y = t(w) %*% x
+#    
+#    # wi(t + 1) = wi(t) + εy(t) [xi(t) − y(t)wi(t)]
+#    
+#    w = w + e*y * (x - y*w)
+#}
+
+
+
+w_df <- data.frame(matrix(nrow = nrow(online_pca), ncol = 2))
+w = c(.70711,.70711)
+e = 0.002
+
+for (i in 1:nrow(online_pca)){
+    x = unlist(online_pca[i, 2:3])
+    y = t(x) %*% w
+    
+    # wi(t + 1) = wi(t) + εy(t) [xi(t) − y(t)wi(t)]
+    
+    w_df[i, ] <- w
+    w = w + e*y * (x - y*w)
+}
+
+w_df$time <- online_pca$X
+w_df$group <- online_pca$group
+
+
+ggplot(w_df, aes(x = X1, y = X2, col = group)) + 
+    scale_color_manual(values = cols) +
+    labs(col   = "Time index (s)",
+         x     = "V1",
+         y     = "V2",
+         title = "") +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.key       = element_rect(colour = "black"),
+          plot.title       = element_text(face = "bold", hjust = 0.5)) + 
+    geom_point(size = 1.5)
+
+
+
+# Testing -----------------------------------------------------------------
+
+
+a = rnorm(10000, 0, 1)
+b = a + rnorm(10000, 0, 0.5)
+test <- data.frame(
+    a,
+    b
+)
+
+
+w_df <- data.frame(matrix(nrow = nrow(test), ncol = 2))
+w = c(.70711,.70711)
+e = 0.002
+
+for (i in 1:nrow(test)){
+    x = unlist(test[i, ])
+    y = t(x) %*% w
+    
+    # wi(t + 1) = wi(t) + εy(t) [xi(t) − y(t)wi(t)]
+    
+    w_df[i, ] <- w
+    w = w + e*y * (x - y*w)
+}
+
+w_df$time <- 1:nrow(test)
+w_df$group <- factor(rep(1:10, each = 100))
+
+
+ggplot(w_df, aes(x = X1, y = X2, col = group)) + 
+    scale_color_manual(values = cols) +
+    labs(col   = "Time index (s)",
+         x     = "V1",
+         y     = "V2",
+         title = "") +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.key       = element_rect(colour = "black"),
+          plot.title       = element_text(face = "bold", hjust = 0.5)) + 
+    geom_point(size = 1.5)
+
+
+prcomp(test)
+
+w_df[nrow(w_df), ]
