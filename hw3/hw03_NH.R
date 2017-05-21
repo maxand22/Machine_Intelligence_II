@@ -146,6 +146,9 @@ ggplot(data = heatmap_data3, aes(x=Var1, y=Var2, fill=value)) +
 # 3.4.1
 
 online_pca <- read.csv("hw3/data/data-onlinePCA.txt", sep = ",", header = TRUE)
+
+#online_pca <- online_pca[sample(1:2000, 2000, FALSE),]
+
 online_pca$group <- factor(rep(1:10, each = 200))
 
 cols <- c("#313695", "#4575b4", "#74add1", "#abd9e9", "#e0f3f8", "#fee090", "#fdae61", "#f46d43", "#d73027", "#a50026")
@@ -199,20 +202,17 @@ p_a
 
 # 3.4.3
 
-#ojas_rule <- function(data, e){
-#    w = c(0.001, 0.001)
-#    y = t(w) %*% x
-#    
-#    # wi(t + 1) = wi(t) + εy(t) [xi(t) − y(t)wi(t)]
-#    
-#    w = w + e*y * (x - y*w)
-#}
-
-
-
+# initialize dataframe to save the weight vector at each iteration (time point)
 w_df <- data.frame(matrix(nrow = nrow(online_pca), ncol = 2))
+
+# initialize weight vector with length 1
 w = c(.70711,.70711)
+
+# set learning rate
 e = 0.002
+
+
+# apply Oja's rule
 
 for (i in 1:nrow(online_pca)){
     x = unlist(online_pca[i, 2:3])
@@ -224,11 +224,11 @@ for (i in 1:nrow(online_pca)){
     w = w + e*y * (x - y*w)
 }
 
+
 w_df$time <- online_pca$X
 w_df$group <- online_pca$group
 
-
-ggplot(w_df, aes(x = X1, y = X2, col = group)) + 
+ggplot(w_df) + 
     scale_color_manual(values = cols) +
     labs(col   = "Time index (s)",
          x     = "V1",
@@ -239,7 +239,38 @@ ggplot(w_df, aes(x = X1, y = X2, col = group)) +
           panel.grid.minor = element_blank(),
           legend.key       = element_rect(colour = "black"),
           plot.title       = element_text(face = "bold", hjust = 0.5)) + 
-    geom_point(size = 1.5)
+    geom_point(aes(x = X1, y = X2, col = group)) 
+
+
+
+
+
+
+
+
+online_pca <- data.frame("time" = rep(w_df$time, times = 2),
+                         "group" = rep(online_pca$group, times = 2),
+                         "V1" = c(online_pca$V1, w_df$X1),
+                         "V2" = c(online_pca$V2, w_df$X2))
+
+online_pca$shape = factor(rep(1:2, each = nrow(online_pca)/2))
+online_pca$alpha = rep(c(.3, 1), each = nrow(online_pca)/2)
+
+ggplot(online_pca) + 
+    scale_color_manual(values = cols) +
+    labs(col   = "Time index (s)",
+         x     = "V1",
+         y     = "V2",
+         title = "") +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.key       = element_rect(colour = "black"),
+          plot.title       = element_text(face = "bold", hjust = 0.5)) + 
+    geom_point(aes(x = V1, y = V2, col = group, shape = shape, alpha = alpha)) + 
+    scale_alpha_identity()
+
+
 
 
 
