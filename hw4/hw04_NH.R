@@ -68,3 +68,19 @@ eigenvals <- eigen(1/p*K_cen)$values
 
 # c)
 
+min1 <- min(toy_data$X1)
+min2 <- min(toy_data$X2)
+
+max1 <- max(toy_data$X1)
+max2 <- max(toy_data$X2)
+
+s1 = seq(min1, max1, length.out = 9)
+s2 = seq(min2, max2, length.out = 10)
+
+S = data.frame(rep(s1, each = 10), rep(s2, times = 9))
+plot(s[,1], s[,2])
+
+
+pcs <- eigenvecs[, 1:8]
+
+
