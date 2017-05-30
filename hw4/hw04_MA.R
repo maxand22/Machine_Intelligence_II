@@ -25,8 +25,13 @@ rbf <- function (x1, x2, sig){
 
 #Generate Kernel Matrix and create new feature space with Kernel Function
 k <- matrix(nrow = nrow(td), ncol = nrow(td))
-k <- sapply(1:nrow(td), function(i) sapply(1:nrow(td), function(j) rbf(td[i,], td[j,], 0.4)))
+#k <- sapply(1:nrow(td), function(i) sapply(1:nrow(td), function(j) rbf(td[i,], td[j,], 0.4)))
 
+for(i in 1:nrow(td)){
+  for(j in 1:nrow(td)){
+    k[i, j] <- rbf(td[i,], td[j, ], sig = .2)
+  }
+}
 
 # centering
 N <- matrix(1/nrow(k), nrow = nrow(k), ncol = ncol(k))
@@ -36,11 +41,13 @@ K_cen <- k - N%*%k - k%*%k + N%*%k%*%N
 #################################################################
 #d Discuss for which applications Kernel-PCA might be suitable.
 
-#Kernel PCA kan be used to get ride of noise for image analysis. 
+# Kernel PCA kan be used to get ride of noise for image analysis (De-Noising in feature space). 
 # The more Kernels we use the more non-linear relationships we can cover and
 # reporduce in a later stage. Based on this, we can get ride of noise
 # occuring in a linear PCA image application. 
-# Furthermore, Kernel-PCA is suitable to detect patterns for example with SVMs.
+# Furthermore, Kernel-PCA is suitable to detect non-linear (complex) patterns for example with SVMs.
 # Since Kernel PCA finds non linear patterns in Data, it is used to detect such patterns
-# e.g. in scientific data in earth Science. 
+# e.g. in scientific data in earth Science, face recognition, active shape models, ECG data.
+# It preservs the subspace that contains these patterns and discards the remaining space.
+
 
