@@ -43,7 +43,7 @@ K <- matrix(nrow = nrow(toy_data), ncol = nrow(toy_data))
 
 for(i in 1:nrow(toy_data)){
     for(j in 1:nrow(toy_data)){
-        K[i, j] <- rbf(toy_data[i,], toy_data[j, ], sigma = .2)
+        K[i, j] <- rbf(toy_data[i,], toy_data[j, ], sigma = 6)
     }
 }
 
@@ -78,9 +78,10 @@ s1 = seq(min1, max1, length.out = 9)
 s2 = seq(min2, max2, length.out = 10)
 
 S = data.frame(rep(s1, each = 10), rep(s2, times = 9))
-plot(s[,1], s[,2])
+#plot(S[,1], S[,2])
 
 
 pcs <- eigenvecs[, 1:8]
 
+plot(pcs[,1], rep(0, 90))
 
