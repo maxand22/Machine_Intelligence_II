@@ -8,6 +8,7 @@ library(ggplot2)
 path1 <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5/sound1.dat"
 path2 <- "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5/sound2.dat"
 
+#1-------------------------------------------------------------------------------
 #1.a
 sound1 <- read.csv(path1, header = FALSE)
 #qplot(1:nrow(sound1), sound1)
@@ -52,7 +53,7 @@ f = function(x){
 }
 
 
-# a)
+#a
 
 # for random initialization of weights --> see 1.f)
 t = 1
@@ -89,5 +90,24 @@ qplot(1:ncol(vvv), vvv[2,])
 
 
 #b
+t = 1
+eta_zero = 0.1
+alpha = 1
+set.seed(2106)
+w <- matrix(runif(4, max = 1, min = 0), 2, 2)
 
+for(t in 1:18000){
+  eta_t = eta_zero/t
+  
+  X = x[,alpha]
+  
+  w_delta <- eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  
+  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  
+  alpha = alpha + 1
+  if(alpha == 18000){
+    alpha = 1
+  }
+}
 

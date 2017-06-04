@@ -3,7 +3,7 @@
 library(audio)
 
 
-setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II")
+#setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II")
 # Ex. 1 -------------------------------------------------------------------
 
 # a)
@@ -100,6 +100,5 @@ vvv = X%*%W
 play(audioSample(t(as.matrix(vvv[,1])), rate = 8192))
 play(audioSample(t(as.matrix(vvv[,2])), rate = 8192))
 
-qplot(1:nrow(vvv), vvv[,1])
 
 
