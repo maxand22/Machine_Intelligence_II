@@ -23,10 +23,10 @@ play(source2)
 #1.b
 set.seed(123)
 s <- t(as.matrix(data.frame(sound1, sound2)))
-#qplot(1:ncol(s), s[1,])
+qplot(1:ncol(s), s[1,])
 a <- matrix(runif(4, max = 1, min = 0), 2, 2)
 x <- a%*%s
-#qplot(1:ncol(x), x[1,])
+qplot(1:ncol(x), x[1,])
 
 
 #1.c
