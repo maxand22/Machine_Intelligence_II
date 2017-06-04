@@ -1,7 +1,7 @@
 # Sheet 05 ICA, Infomax
 
 library(audio)
-
+library(ggplot2)
 
 # Ex. 1 -------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ fdd_over_fd = function(x){
 
 # for random initialization of weights --> see 1.f)
 t = 1
-eta_zero = .1
+eta_zero = 0.1
 alpha = 1
 set.seed(2106)
 W = matrix(runif(4, 0, 1), ncol = 2)
@@ -103,8 +103,12 @@ play(audioSample(t(as.matrix(vvv[,1])), rate = 8192))
 play(audioSample(t(as.matrix(vvv[,2])), rate = 8192))
 
 
+
 W
 solve(A)
+
+qplot(1:nrow(vvv), vvv[,1])
+
 
 
 # b)
