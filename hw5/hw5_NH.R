@@ -31,6 +31,7 @@ set.seed(123)
 A = matrix(runif(4, 0, 2), nrow = 2)
 
 X = S%*%A
+qplot(1:nrow(X), X[,2])
 
 play(audioSample(t(as.matrix(X[,1])), rate = 8192))
 play(audioSample(t(as.matrix(X[,2])), rate = 8192))

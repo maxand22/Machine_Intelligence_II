@@ -21,12 +21,18 @@ source2 <- audioSample(t(as.matrix(sound2)), rate=8192)
 play(source2)
 
 #1.b
-s <- matrix( data= c(t(as.matrix(sound1)), t(as.matrix(sound2))),nrow = 2)
+set.seed(123)
+s <- t(as.matrix(data.frame(sound1, sound2)))
+#qplot(1:ncol(s), s[1,])
 a <- matrix(runif(4, max = 1, min = 0), 2, 2)
 x <- a%*%s
+#qplot(1:ncol(x), x[1,])
+
 
 #1.c
+set.seed(123)
 x_permute <- x[,sample(ncol(x))]
+qplot(1:ncol(x_permute), x_permute[2,])
 
 #1.c
 correlation <- matrix(1, nrow = nrow(x),ncol=nrow(s))
@@ -75,7 +81,6 @@ for(t in 1:18000){
   }
 }
 
-#vvv = X%*%solve(A)
 vvv = w%*%x
 w
 solve(a)
@@ -101,9 +106,7 @@ for(t in 1:18000){
   
   X = x[,alpha]
   
-  w_delta <- eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
-  
-  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  w = w + eta_t*(((-1)*f(w%*%cbind(X, X))*(w%*%t(cbind(X,X)))) + (1 - 2*f(w%*%cbind(X, X)))*(w%*%t(cbind(X,X))))%*%w
   
   alpha = alpha + 1
   if(alpha == 18000){
@@ -111,3 +114,14 @@ for(t in 1:18000){
   }
 }
 
+vvv_natural = w%*%x
+w
+solve(a)
+
+sound1_natural <- audioSample(t(as.matrix(vvv_natural[1,])), rate = 8192/2)
+play(sound1_natural)
+qplot(1:ncol(vvv), vvv_natural[1,])
+
+sound2_natural <- audioSample(t(as.matrix(vvv_natural[2,])), rate = 8192/2)
+play(sound2_natural)
+qplot(1:ncol(vvv), vvv_natural[2,])
