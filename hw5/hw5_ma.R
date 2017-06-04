@@ -1,6 +1,5 @@
 install.packages("audio")
 library(audio)
-setWavPlayer("playwave")
 
 install.packages("ggplot2")
 library(ggplot2)
@@ -21,7 +20,7 @@ source2 <- audioSample(t(as.matrix(sound2)), rate=8192)
 play(source2)
 
 #1.b
-s <- matrix( data= c(t(as.matrix(sound1)), t(as.matrix(sound2))),nrow =  ncol(a))
+s <- matrix( data= c(t(as.matrix(sound1)), t(as.matrix(sound2))),nrow = 2)
 a <- matrix(runif(4, max = 1, min = 0), 2, 2)
 x <- a%*%s
 
@@ -45,5 +44,50 @@ x_permute_center <- scale(t(x_permute), center = TRUE, scale = FALSE)
 w <- matrix(runif(4, max = 1, min = 0), 2, 2)
 
 
-#2.a
+#2--------------------------------------------------------------
+
+# logistic function
+f = function(x){
+  return(1/(1+exp(-x)))
+}
+
+
+# a)
+
+# for random initialization of weights --> see 1.f)
+t = 1
+eta_zero = 0.1
+alpha = 1
+set.seed(2106)
+w <- matrix(runif(4, max = 1, min = 0), 2, 2)
+
+for(t in 1:18000){
+  eta_t = eta_zero/t
+  
+  X = x[,alpha]
+  
+  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  
+  alpha = alpha + 1
+  if(alpha == 18000){
+    alpha = 1
+  }
+}
+
+#vvv = X%*%solve(A)
+vvv = w%*%x
+w
+solve(a)
+
+sound1_regular <- audioSample(t(as.matrix(vvv[1,])), rate = 8192/2)
+play(sound1_regular)
+qplot(1:ncol(vvv), vvv[1,])
+
+sound2_regular <- audioSample(t(as.matrix(vvv[2,])), rate = 8192/2)
+play(sound2_regular)
+qplot(1:ncol(vvv), vvv[2,])
+
+
+#b
+
 

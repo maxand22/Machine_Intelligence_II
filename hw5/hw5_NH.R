@@ -3,6 +3,7 @@
 library(audio)
 
 
+setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II")
 # Ex. 1 -------------------------------------------------------------------
 
 # a)
@@ -34,7 +35,7 @@ play(audioSample(t(as.matrix(X[,2])), rate = 8192))
 
 # c)
 
-X = X[sample(nrow(X)), ]
+#X = X[sample(nrow(X)), ]
 
 play(audioSample(t(as.matrix(X[,1])), rate = 8192))
 play(audioSample(t(as.matrix(X[,2])), rate = 8192))
@@ -75,7 +76,7 @@ fdd_over_fd = function(x){
 
 # for random initialization of weights --> see 1.f)
 t = 1
-eta_zero = .1
+eta_zero = 0.1
 alpha = 1
 set.seed(2106)
 W = matrix(runif(4, 0, 1), ncol = 2)
@@ -99,6 +100,6 @@ vvv = X%*%W
 play(audioSample(t(as.matrix(vvv[,1])), rate = 8192))
 play(audioSample(t(as.matrix(vvv[,2])), rate = 8192))
 
-
+qplot(1:nrow(vvv), vvv[,1])
 
 
