@@ -34,7 +34,7 @@ play(audioSample(t(as.matrix(X[,2])), rate = 8192))
 
 # c)
 
-X = X[sample(nrow(X)), ]
+#X = X[sample(nrow(X)), ]
 
 play(audioSample(t(as.matrix(X[,1])), rate = 8192))
 play(audioSample(t(as.matrix(X[,2])), rate = 8192))
@@ -80,19 +80,22 @@ alpha = 1
 set.seed(2106)
 W = matrix(runif(4, 0, 1), ncol = 2)
 
-for(t in 1:18000){
+for(t in 1:100){
     eta_t = eta_zero/t
     
-    x = X[alpha,]
-    
-    W = W + eta_t*(t(solve(W)) + (1 - 2*f(W %*% cbind(x, x)))*t(cbind(x,x)))
-    
-    alpha = alpha + 1
-    if(alpha == 18000){
-        alpha = 1
+    for(alpha in 1:18000){
+        
+        x = X[alpha,]
+        
+        W = W + eta_t*(t(solve(W)) + (1 - 2*f(W %*% cbind(x, x)))*t(cbind(x,x)))
+        
     }
 }
 
+alpha = alpha + 1
+if(alpha == 18000){
+    alpha = 1
+}
 
 #vvv = X%*%solve(A)
 vvv = X%*%W
@@ -100,5 +103,9 @@ play(audioSample(t(as.matrix(vvv[,1])), rate = 8192))
 play(audioSample(t(as.matrix(vvv[,2])), rate = 8192))
 
 
+W
+solve(A)
 
+
+# b)
 
