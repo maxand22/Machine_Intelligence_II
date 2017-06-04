@@ -83,21 +83,19 @@ alpha = 1
 set.seed(2106)
 W = matrix(runif(4, 0, 1), ncol = 2)
 
-for(t in 1:100){
+for(t in 1:18000){
     eta_t = eta_zero/t
     
-    for(alpha in 1:18000){
-        
-        x = X[alpha,]
-        
-        W = W + eta_t*(t(solve(W)) + (1 - 2*f(W %*% cbind(x, x)))*t(cbind(x,x)))
-        
+    x = X[alpha,]
+    
+    w_delta <- eta_t*(t(solve(W)) + (1 - 2*f(W%*%cbind(x, x)))*t(cbind(x,x)))
+    
+    W = W + eta_t*(t(solve(W)) + (1 - 2*f(W%*%cbind(x, x)))*t(cbind(x,x)))
+    
+    alpha = alpha + 1
+    if(alpha == 18000){
+        alpha = 1
     }
-}
-
-alpha = alpha + 1
-if(alpha == 18000){
-    alpha = 1
 }
 
 #vvv = X%*%solve(A)
