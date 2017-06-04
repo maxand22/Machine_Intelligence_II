@@ -21,11 +21,16 @@ source2 <- audioSample(t(as.matrix(sound2)), rate=8192)
 play(source2)
 
 #1.b
-s <- matrix( data= c(t(as.matrix(sound1)), t(as.matrix(sound2))),nrow = 2)
+set.seed(123)
+s <- t(as.matrix(data.frame(sound1, sound2)))
+#qplot(1:ncol(s), s[1,])
 a <- matrix(runif(4, max = 1, min = 0), 2, 2)
 x <- a%*%s
+#qplot(1:ncol(x), x[1,])
+
 
 #1.c
+set.seed(123)
 x_permute <- x[,sample(ncol(x))]
 qplot(1:ncol(x_permute), x_permute[2,])
 
@@ -77,8 +82,8 @@ for(t in 1:18000){
 }
 
 vvv = w%*%x
-#w
-#solve(a)
+w
+solve(a)
 
 sound1_regular <- audioSample(t(as.matrix(vvv[1,])), rate = 8192/2)
 play(sound1_regular)
