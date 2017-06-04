@@ -101,9 +101,7 @@ for(t in 1:18000){
   
   X = x[,alpha]
   
-  w_delta <- eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
-  
-  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*(w%*%t(cbind(X,X))))
   
   alpha = alpha + 1
   if(alpha == 18000){
