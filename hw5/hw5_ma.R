@@ -45,6 +45,7 @@ for (i in 1:nrow(x)) {
 
 #1.d
 x_permute_center <- scale(t(x_permute), center = TRUE, scale = FALSE)
+x = t(scale(t(x), center = TRUE, scale = FALSE))
 #round(colMeans(x_permute_center),2)
 
 #1.f
@@ -85,18 +86,18 @@ vvv = w%*%x
 w
 solve(a)
 
-sound1_regular <- audioSample(t(as.matrix(vvv[1,])), rate = 8192/2)
+sound1_regular <- audioSample(t(as.matrix(vvv[1,])), rate = 8192)
 play(sound1_regular)
 qplot(1:ncol(vvv), vvv[1,])
 
-sound2_regular <- audioSample(t(as.matrix(vvv[2,])), rate = 8192/2)
+sound2_regular <- audioSample(t(as.matrix(vvv[2,])), rate = 8192)
 play(sound2_regular)
 qplot(1:ncol(vvv), vvv[2,])
 
 
 #b
 t = 1
-eta_zero = 0.1
+eta_zero = 50
 alpha = 1
 set.seed(2106)
 w <- matrix(runif(4, max = 1, min = 0), 2, 2)
@@ -118,10 +119,10 @@ vvv_natural = w%*%x
 w
 solve(a)
 
-sound1_natural <- audioSample(t(as.matrix(vvv_natural[1,])), rate = 8192/2)
+sound1_natural <- audioSample(t(as.matrix(vvv_natural[1,])), rate = 8192)
 play(sound1_natural)
 qplot(1:ncol(vvv), vvv_natural[1,])
 
-sound2_natural <- audioSample(t(as.matrix(vvv_natural[2,])), rate = 8192/2)
+sound2_natural <- audioSample(t(as.matrix(vvv_natural[2,])), rate = 8192)
 play(sound2_natural)
 qplot(1:ncol(vvv), vvv_natural[2,])
