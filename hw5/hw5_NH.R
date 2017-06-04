@@ -3,7 +3,10 @@
 library(audio)
 library(ggplot2)
 
-# Ex. 1 -------------------------------------------------------------------
+
+#setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II")
+
+    # Ex. 1 -------------------------------------------------------------------
 
 # a)
 
@@ -104,10 +107,12 @@ play(audioSample(t(as.matrix(vvv[,2])), rate = 8192))
 
 
 
+
 W
 solve(A)
 
 qplot(1:nrow(vvv), vvv[,1])
+
 
 
 
