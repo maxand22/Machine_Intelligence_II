@@ -21,16 +21,17 @@ source2 <- audioSample(t(as.matrix(sound2)), rate=8192)
 play(source2)
 
 #1.b
-set.seed(123)
+set.seed(1234)
 s <- t(as.matrix(data.frame(sound1, sound2)))
-qplot(1:ncol(s), s[1,])
+#qplot(1:ncol(s), s[1,])
 a <- matrix(runif(4, max = 1, min = 0), 2, 2)
 x <- a%*%s
-qplot(1:ncol(x), x[1,])
+#x = t(scale(t(x), center = TRUE, scale = FALSE))
+#qplot(1:ncol(x), x[1,])
 
 
 #1.c
-set.seed(123)
+#set.seed(123)
 x_permute <- x[,sample(ncol(x))]
 qplot(1:ncol(x_permute), x_permute[2,])
 
@@ -45,11 +46,10 @@ for (i in 1:nrow(x)) {
 
 #1.d
 x_permute_center <- scale(t(x_permute), center = TRUE, scale = FALSE)
-#x = t(scale(t(x), center = TRUE, scale = FALSE))
 #round(colMeans(x_permute_center),2)
 
 #1.f
-w <- matrix(runif(4, max = 1, min = 0), 2, 2)
+#w <- matrix(runif(4, max = 1, min = 0), 2, 2)
 
 
 #2--------------------------------------------------------------
@@ -66,7 +66,7 @@ f = function(x){
 t = 1
 eta_zero = 0.1
 alpha = 1
-set.seed(2106)
+set.seed(123)
 w <- matrix(runif(4, max = 1, min = 0), 2, 2)
 
 for(t in 1:18000){
@@ -74,7 +74,7 @@ for(t in 1:18000){
   
   X = x[,alpha]
   
-  w = w + eta_t*(t(solve(w)) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
+  w = w + eta_t*(solve(w) + (1 - 2*f(w%*%cbind(X, X)))*t(cbind(X,X)))
   
   alpha = alpha + 1
   if(alpha == 18000){
@@ -99,7 +99,7 @@ qplot(1:ncol(vvv), vvv[2,])
 t = 1
 eta_zero = 50
 alpha = 1
-set.seed(2106)
+set.seed(123)
 w <- matrix(runif(4, max = 1, min = 0), 2, 2)
 
 for(t in 1:18000){
@@ -126,3 +126,5 @@ qplot(1:ncol(vvv), vvv_natural[1,])
 sound2_natural <- audioSample(t(as.matrix(vvv_natural[2,])), rate = 8192)
 play(sound2_natural)
 qplot(1:ncol(vvv), vvv_natural[2,])
+
+cor(t(s),t(vvv_natural))
