@@ -6,6 +6,26 @@ library(reshape)
 library(audio)
 library(corrplot)
 
+#custom functions
+
+lr_func <- function(x){
+  result <- 0
+  for(i in 1:2){
+    for(j in 1:2){
+      result <- result + x[i,j]^2
+    }
+  }
+  return(result)
+}
+
+fhat <- function(x){
+  return(1/(1+exp(-x)))
+}
+
+f1 <- function(x){
+  return(1-2*fhat(x))
+}
+
 ##### Ex 5.1 -------------------------------------------------------------------------------
 
 ### a
@@ -55,22 +75,20 @@ set.seed(234)
 W <- matrix(runif(4),2,2)
 
 
-##### Ex 5.2 -----------------------------------------------------------------------------
-
-# functions needed
-fhat <- function(x){
-  return(1/(1+exp(-x)))
-}
-f1 <- function(x){
-  return(1-2*fhat(x))
-}
+##### Ex 5.2 ----------------------------------------------------------------------------
 
 ### a
+# result array for ex3
+lr_dev <- matrix(NA, nrow = 18,ncol = 2)
+
 e0 <- 10
 W_r <- W
 for(alpha in 1:18000){
   eta <- e0/alpha
-  x <- X[,alpha] 
+  x <- X[,alpha]
+  if(alpha %% 1000 == 0){
+    lr_dev[alpha/1000,1] <- lr_func(eta*(t(solve(W_r)) + f1(W_r%*%cbind(x, x)*t(cbind(x,x)))))
+  }
   W_r <- W_r + eta*(t(solve(W_r)) + f1(W_r%*%cbind(x, x)*t(cbind(x,x))))
 }
 
@@ -87,3 +105,6 @@ plot(1:18000, t(S_hat1)[,1], type = 'l')
 plot(1:18000, t(S_hat1)[,2], type = 'l')
 play(audioSample(S_hat1[1,], rate = 8192))
 play(audioSample(S_hat1[2,], rate = 8192))
+
+
+##### Ex 3 -------------------------------------------------------------------------------
