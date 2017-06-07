@@ -3,7 +3,7 @@
 library(audio)
 library(ggplot2)
 
-setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5")
+setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/")
 
 # Ex. 1 -------------------------------------------------------------------
 
@@ -19,8 +19,6 @@ plot(1:18000, s2$V1, type = 'l')
 
 
 play(audioSample(t(as.matrix(s1)), rate = 8192))
-
-
 play(audioSample(t(as.matrix(s2)), rate = 8192))
 
 
@@ -52,7 +50,6 @@ cor(S[2,], X[2,])
 
 X[1,] = X[1,] - mean(X[1,])
 X[2,] = X[2,] - mean(X[2,])
-
 
 round(rowMeans(X), 8)
 
@@ -107,9 +104,8 @@ unmixing_regular = function(W, X, n_steps = 18000){
 }
 
 W_regular = unmixing_regular(W, X)
-
-
 S_hat = W_regular%*%X
+
 play(audioSample(t(as.matrix(scale(S_hat[1,]))), rate = 8192))
 play(audioSample(t(as.matrix(scale(s1))), rate = 8192))
 
@@ -172,34 +168,51 @@ play(audioSample(t(as.matrix(S_hat_natural[2,])), rate = 8192))
 # a)
 
 # original sounds
-
 plot(1:18000, s1$V1, type = 'l')
 plot(1:18000, s2$V1, type = 'l')
 play(audioSample(t(as.matrix(s1)), rate = 8192))
 play(audioSample(t(as.matrix(s2)), rate = 8192))
 
 # mixed
-
 plot(1:18000, X[1,], type = 'l')
 plot(1:18000, X[2,], type = 'l')
 play(audioSample(t(as.matrix(X[1,])), rate = 8192))
 play(audioSample(t(as.matrix(X[2,])), rate = 8192))
 
 # permuted
-
 plot(1:18000, X_perm[1,], type = 'l')
 plot(1:18000, X_perm[2,], type = 'l')
 play(audioSample(t(as.matrix(X_perm[1,])), rate = 8192))
 play(audioSample(t(as.matrix(X_perm[2,])), rate = 8192))
 
-# recovered
+# recovered regular
+plot(1:18000, S_hat[1,], type = 'l')
+plot(1:18000, S_hat[2,], type = 'l')
+play(audioSample(t(as.matrix(X_perm[1,])), rate = 8192))
+play(audioSample(t(as.matrix(X_perm[2,])), rate = 8192))
+
+# recovered natural
+plot(1:18000, S_hat_natural[1,], type = 'l')
+plot(1:18000, S_hat_natural[2,], type = 'l')
+play(audioSample(t(as.matrix(X_perm[1,])), rate = 8192))
+play(audioSample(t(as.matrix(X_perm[2,])), rate = 8192))
 
 
 
 # b)
+#cor regular and source
+cor(t(S),t(S_hat))
+cor(S[1,], S_hat[1,])
+cor(S[1,], S_hat[2,])
+cor(S[2,], S_hat[1,])
+cor(S[2,], S_hat[2,])
 
-
-
+#cor natural and source
+cor(t(S),t(S_hat_natural))
+cor(S[1,], S_hat_natural[1,])
+cor(S[1,], S_hat_natural[2,])
+cor(S[2,], S_hat_natural[1,])
+cor(S[2,], S_hat_natural[2,])
 
 # c)
 
@@ -273,17 +286,41 @@ conv_regular = convergence_speed_regular(W, X)
 conv_natural = convergence_speed_natural(W, X)
 conv_regular_whitened = convergence_speed_regular(W, X_whitened)
 conv_natural_whitened = convergence_speed_natural(W, X_whitened)
-    
+
+qplot(1:length(conv_regular),conv_regular)
+qplot(1:length(conv_natural),conv_natural)
+
+qplot(1:length(conv_regular_whitened),conv_regular_whitened)
+qplot(1:length(conv_natural_whitened),conv_natural_whitened)
+
 # d)
 
 #mixed
-plot(density(X[1,]))
-lines(density(X[2,]))
+x1_d <- density(X[1,])
+plot(x1_d)
 
-# unmixed
+x2_d <- density(X[2,])
+plot(x2_d)
 
+#unmixed regular
+S_hat1_d <- density(S_hat[1,])
+plot(S_hat1_d)
 
-# true signals
-plot(density(s1$V1))
-lines(density(s2$V1))
+S_hat2_d <- density(S_hat[2,])
+plot(S_hat2_d)
 
+#unmixed natural
+S_hat_natural1_d <- density(S_hat_natural[1,])
+plot(S_hat_natural1_d)
+
+S_hat_natural2_d <- density(S_hat_natural[2,])
+plot(S_hat_natural2_d)
+
+#true signals
+s1_d <- density(S[1,])
+plot(s1_d)
+
+s2_d <- density(S[2,])
+plot(s2_d)
+
+#you see that a lot of values are around zero (low) for the birds and  
