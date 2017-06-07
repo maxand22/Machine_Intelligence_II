@@ -120,20 +120,32 @@ play(audioSample(t(as.matrix(scale(s2))), rate = 8192))
 t = 1
 eta_zero = 1
 alpha = 1
-set.seed(2106)
+set.seed(123)
 W = matrix(runif(4, 0, 1), ncol = 2)
 
 unmixing_natural = function(W, X, n_steps = 18000){
+    d = matrix(c(0,0,0,0), ncol = 2)
+    
+    for(i in 1:ncol(X)){
+        x = X[,i]
+        f_wx = 1 - 2*f(W%*%cbind(x,x))
+        wx = W%*%cbind(x,x)
+        d = d + f_wx%*%wx
+    }
+    
     for(t in 1:n_steps){
         eta_t = eta_zero/t
         
         x = X[,alpha]
         
-        W_inv = solve(W)
-        
         f_wx = 1 - 2*f(W%*%cbind(x,x))
         
-        W_delta = eta_t*((W_inv + f_wx*rbind(x,x))%*%t(W)%*%W)
+        wx = W%*%cbind(x,x)
+        
+        k_delta = -1/ncol(X)*d
+        
+        
+        W_delta = eta_t*((k_delta + f_wx%*%wx)%*%W)
         
         W = W + W_delta
         
@@ -145,11 +157,11 @@ unmixing_natural = function(W, X, n_steps = 18000){
     return(W)
 }
 
-#W_natural = unmixing_natural(W, X)
+W_natural = unmixing_natural(W, X)
 
-#S_hat_natural = W_natural%*%X
-#play(audioSample(t(as.matrix(S_hat_natural[1,])), rate = 8192))
-#play(audioSample(t(as.matrix(S_hat_natural[2,])), rate = 8192))
+S_hat_natural = W_natural%*%X
+play(audioSample(t(as.matrix(S_hat_natural[1,])), rate = 8192))
+play(audioSample(t(as.matrix(S_hat_natural[2,])), rate = 8192))
 
 
 
