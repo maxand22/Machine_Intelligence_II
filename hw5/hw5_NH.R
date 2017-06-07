@@ -13,12 +13,11 @@ s2 = read.table("hw5/sound2.dat", header=FALSE)
 
 S = t(as.matrix(data.frame(s1,s2)))
 
-plot(1:18000, s1$V1, type = 'l')
-plot(1:18000, s2$V1, type = 'l')
+plot(1:18000, s1$V1, type = 'l', main = 'signal 1', xlab = 't', ylab = 'value')
+plot(1:18000, s2$V1, type = 'l', main = 'signal 2', xlab = 't', ylab = 'value')
 
 
 play(audioSample(t(as.matrix(s1)), rate = 8192))
-
 
 play(audioSample(t(as.matrix(s2)), rate = 8192))
 
@@ -62,8 +61,6 @@ W = matrix(runif(4, 0, 1), ncol = 2)
 
 
 
-
-
 # Ex. 2 -------------------------------------------------------------------
 
 # logistic function
@@ -71,7 +68,8 @@ f = function(x){
     return(1/(1+exp(-x)))
 }
 
-ggplot(data.frame(x = c(-5, 5)), aes(x)) + stat_function(fun = f)
+ggplot(data.frame(x = c(-8, 8)), aes(x)) + 
+    stat_function(fun = f)
 
 
 # a)
@@ -81,7 +79,7 @@ t = 1
 eta_zero = .5
 alpha = 1
 set.seed(123)
-W = matrix(runif(4, 0, 1), ncol = 2)
+W1 = matrix(runif(4, 0, 1), ncol = 2)
 
 unmixing_regular = function(W, X, n_steps = 18000){
     for(t in 1:n_steps){
@@ -105,7 +103,7 @@ unmixing_regular = function(W, X, n_steps = 18000){
     return(W)
 }
 
-W_regular = unmixing_regular(W, X)
+W_regular = unmixing_regular(W1, X)
 
 
 S_hat = W_regular%*%X
@@ -118,20 +116,12 @@ play(audioSample(t(as.matrix(scale(s2))), rate = 8192))
 # b)
 
 t = 1
-eta_zero = 1
+eta_zero = 0.33
 alpha = 1
-set.seed(123)
-W = matrix(runif(4, 0, 1), ncol = 2)
+set.seed(9991)
+W2 = matrix(runif(4, 0, 1), ncol = 2)
 
 unmixing_natural = function(W, X, n_steps = 18000){
-    d = matrix(c(0,0,0,0), ncol = 2)
-    
-    for(i in 1:ncol(X)){
-        x = X[,i]
-        f_wx = 1 - 2*f(W%*%cbind(x,x))
-        wx = W%*%cbind(x,x)
-        d = d + f_wx%*%wx
-    }
     
     for(t in 1:n_steps){
         eta_t = eta_zero/t
@@ -142,7 +132,7 @@ unmixing_natural = function(W, X, n_steps = 18000){
         
         wx = W%*%cbind(x,x)
         
-        k_delta = -1/ncol(X)*d
+        k_delta = matrix(c(1,0,0,1), ncol = 2)
         
         
         W_delta = eta_t*((k_delta + f_wx%*%wx)%*%W)
@@ -157,7 +147,8 @@ unmixing_natural = function(W, X, n_steps = 18000){
     return(W)
 }
 
-W_natural = unmixing_natural(W, X)
+W_natural = unmixing_natural(W2, X)
+
 
 S_hat_natural = W_natural%*%X
 play(audioSample(t(as.matrix(S_hat_natural[1,])), rate = 8192))
@@ -193,6 +184,17 @@ play(audioSample(t(as.matrix(X_perm[2,])), rate = 8192))
 
 # recovered
 
+# regular
+plot(1:18000, S_hat[1,], type = 'l')
+plot(1:18000, S_hat[2,], type = 'l')
+play(audioSample(t(as.matrix(S_hat[1,])), rate = 8192))
+play(audioSample(t(as.matrix(S_hat[2,])), rate = 8192))
+
+# natural 
+plot(1:18000, S_hat_natural[1,], type = 'l')
+plot(1:18000, S_hat_natural[2,], type = 'l')
+play(audioSample(t(as.matrix(S_hat_natural[1,])), rate = 8192))
+play(audioSample(t(as.matrix(S_hat_natural[2,])), rate = 8192))
 
 
 # b)
@@ -209,20 +211,20 @@ convergence_speed_regular = function(W, X, n_steps = 18000){
         
         x = X[,alpha]
         
-        W_inv = solve(W)
+        W_inv = t(solve(W))
         
         f_wx = 1 - 2*f(W%*%cbind(x,x))
         
-        W_delta = eta_t*(W_inv + f_wx*rbind(x,x))
+        W_delta = eta_t*(W_inv + f_wx*t(cbind(x,x)))
         
         W = W + W_delta
-        
+
         if(t %% 1000 == 0){
-            c_rate = c(c_rate, sum(W^2))
+            c_rate = c(c_rate, sum(W_delta^2))
         }
         
         alpha = alpha + 1
-        if(alpha == n_steps){
+        if(alpha == ncol(X)){
             alpha = 1
         }
     }
@@ -233,26 +235,30 @@ convergence_speed_regular = function(W, X, n_steps = 18000){
 
 
 convergence_speed_natural = function(W, X, n_steps = 18000){
+    
     c_rate = c()
     for(t in 1:n_steps){
         eta_t = eta_zero/t
         
         x = X[,alpha]
         
-        W_inv = solve(W)
-        
         f_wx = 1 - 2*f(W%*%cbind(x,x))
         
-        W_delta = eta_t*((W_inv + f_wx*rbind(x,x))%*%t(W)%*%W)
+        wx = W%*%cbind(x,x)
+        
+        k_delta = matrix(c(1,0,0,1), ncol = 2)
+        
+        
+        W_delta = eta_t*((k_delta + f_wx%*%wx)%*%W)
         
         W = W + W_delta
         
         if(t %% 1000 == 0){
-            c_rate = c(c_rate, sum(W^2))
+            c_rate = c(c_rate, sum(W_delta^2))
         }
         
         alpha = alpha + 1
-        if(alpha == n_steps){
+        if(alpha == ncol(X)){
             alpha = 1
         }
     }
@@ -268,11 +274,19 @@ round(cor(X_whitened_t), 5)
 
 X_whitened = t(X_whitened_t)
 
-conv_regular = convergence_speed_regular(W, X)
-conv_natural = convergence_speed_natural(W, X)
-conv_regular_whitened = convergence_speed_regular(W, X_whitened)
-conv_natural_whitened = convergence_speed_natural(W, X_whitened)
-    
+conv_regular = convergence_speed_regular(W1, X, n_steps = 18000)
+conv_natural = convergence_speed_natural(W2, X, n_steps = 18000)
+conv_regular_whitened = convergence_speed_regular(W1, X_whitened, n_steps = 18000)
+conv_natural_whitened = convergence_speed_natural(W2, X_whitened, n_steps = 18000)
+
+par(mfrow = c(2,2))
+plot(1:18, conv_regular, main = 'R')
+plot(1:18, conv_natural, main = 'N')
+plot(1:18, conv_regular_whitened, main = 'RW')
+plot(1:18, conv_natural_whitened, main = 'NW')
+par(mfrow = c(2,2))
+
+
 # d)
 
 #mixed
@@ -281,6 +295,13 @@ lines(density(X[2,]))
 
 # unmixed
 
+# regular
+plot(density(S_hat[1,]))
+lines(density(S_hat[2,]))
+
+# natural
+plot(density(S_hat_natural[1,]))
+lines(density(S_hat_natural[2,]))
 
 # true signals
 plot(density(s1$V1))
