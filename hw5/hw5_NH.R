@@ -3,7 +3,7 @@
 library(audio)
 library(ggplot2)
 
-setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5")
+setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/")
 
 # Ex. 1 -------------------------------------------------------------------
 
@@ -295,6 +295,8 @@ plot(density(X[1,]))
 lines(density(X[2,]))
 
 # unmixed
+#plot(density(X[1,]))
+#lines(density(X[2,]))
 
 # regular
 plot(density(S_hat[1,]))
