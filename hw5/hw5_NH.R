@@ -3,6 +3,10 @@
 library(audio)
 library(ggplot2)
 
+<<<<<<< HEAD
+=======
+setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/")
+>>>>>>> 5d39df794fa3a3483d4cf2f3c05c18d7b45f6872
 
 # Ex. 1 -------------------------------------------------------------------
 
@@ -299,6 +303,8 @@ plot(density(X[1,]), main = 'Mixed signals', lwd = 2, col = 2)
 lines(density(X[2,]), lwd = 2, col = 4)
 
 # unmixed
+#plot(density(X[1,]))
+#lines(density(X[2,]))
 
 # regular
 plot(density(S_hat[1,]), main = 'Recovered (regular)', lwd = 2, col = 2)

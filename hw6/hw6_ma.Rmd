@@ -1,0 +1,309 @@
+---
+title: "hw6_ma"
+output: pdf_document
+---
+setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5")
+
+```{r}
+library(audio)
+
+install.packages("VGAM")
+library(VGAM)
+```
+
+
+6.1.a 
+Extend your code from the previous problem sheet to get an ICA-learning scheme based on the natural gradient with a learning rate ε that decays slowly to 0 (e.g. εt+1 = λεt with λ ≈ 1, λ < 1). Note that depending on λ you have to iterate over the (shuffled) data more than once for proper convergence.
+
+Initializsation of last Excersise
+```{r}
+# a)
+s1 = read.table("sound1.dat", header=FALSE)
+s2 = read.table("sound2.dat", header=FALSE)
+
+S = t(as.matrix(data.frame(s1,s2)))
+
+# b)
+set.seed(1234)
+A = matrix(runif(4, 0, 1), nrow = 2)
+
+X = A%*%S
+
+
+# e)
+X[1,] = X[1,] - mean(X[1,])
+X[2,] = X[2,] - mean(X[2,])
+```
+
+
+Extention by lambda decreasing to zero and Plot of S_head
+(assumption lambda ist not the eigenvalue)
+```{r}
+# logistic function
+f = function(x){
+    return(1/(1+exp(-x)))
+}
+
+
+# natural Gradient
+t = 1
+eta_t = 0.7
+alpha = 1
+lambda = 0.9102 #0.9112
+set.seed(9991)
+W2 = matrix(runif(4, 0, 1), ncol = 2)
+
+
+unmixing_natural = function(W, X, n_steps = 18000){
+    
+    for(t in 1:n_steps){
+        eta_t = eta_t*lambda
+        
+        if(alpha > n_steps-12){
+           print(eta_t)
+        }
+        
+        x = X[,alpha]
+        
+        c <-  do.call(cbind, replicate(nrow(W), x, simplify=FALSE))
+        
+        f_wx = 1 - 2*f(W%*%c)
+        
+        wx = W%*%c
+        
+        k_delta = diag(nrow(W))
+        
+        
+        W_delta = eta_t*((k_delta + f_wx%*%wx)%*%W)
+        
+        W = W + W_delta
+        
+        alpha = alpha + 1
+        if(alpha == n_steps){
+            alpha = 1
+        }
+    }
+    return(W)
+}
+
+
+W_natural = unmixing_natural(W2, X)
+S_hat_natural = W_natural%*%X
+
+cor(t(S_hat_natural), t(S))
+plot(1:18000, S_hat_natural[1,], type = 'l', main = 'unmixed bird', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_natural[2,], type = 'l', main = 'unmixed halleluja', xlab = 't', ylab = 'value')
+
+#play(audioSample(t(as.matrix(S_hat_natural[1,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural[2,])), rate = 8192))
+
+```
+
+
+6.1.b
+Use the two sound signals from the last problem sheet and add (as third source s3) an ad- ditional “noise” source (normally distributed random numbers with a standard deviation similar to the two signals). Mix the signals using a mixing matrix of your choice and apply your ICA-algorithm. Plot the Mixed Sounds and recovered Sources
+
+
+Plot initialised the third source normal distributed
+```{r}
+
+set.seed(222)
+s3 <- t(matrix(rnorm(nrow(s1),0,((sd(as.matrix(s1)) + sd(as.matrix(s2)))/2)),nrow = 1))
+S3 = t(as.matrix(data.frame(s1,s2,s3)))
+
+plot(1:18000, s3, type = 'l', main = 'source 3 normal distributed', xlab = 't', ylab = 'value')
+
+```
+
+plot the created observations X
+```{r}
+
+set.seed(1234)
+A3 = matrix(runif(9, 0, 1), nrow = 3)
+X3 = A3%*%S3
+
+#centering
+X3[1,] = X3[1,] - mean(X3[1,])
+X3[2,] = X3[2,] - mean(X3[2,])
+X3[3,] = X3[3,] - mean(X3[3,])
+
+plot(1:18000, X3[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
+plot(1:18000, X3[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
+plot(1:18000, X3[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
+
+
+```
+
+
+Plot the unmixed Xb by modified natural gradient 3x3
+```{r}
+# natural Gradient
+t = 1
+eta_t = 0.3
+alpha = 1
+lambda = 0.9102 #0.9102
+set.seed(9991)
+W3 = matrix(runif(9, 0, 1), ncol = 3)
+
+W_natural3 = unmixing_natural(W3, X3)
+S_hat_natural3 = W_natural3%*%X3
+
+cor(t(S_hat_natural3), t(S3))
+plot(1:18000, S_hat_natural3[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_natural3[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_natural3[3,], type = 'l', main = 's_hat source 3 normal distributed', xlab = 't', ylab = 'value')
+#play(audioSample(t(as.matrix(S_hat_natural3[1,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[2,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[3,])), rate = 8192))
+```
+
+
+(c) Do the same analysis but adding a different “noise”-source (e.g. Laplace distributed) instead of the normal one.
+
+Plot initialised the third source t distributed
+```{r}
+
+set.seed(666666)
+st <- t(matrix(rt(nrow(s1),10),nrow = 1))
+St = t(as.matrix(data.frame(s1,s2,st)))
+
+plot(1:18000, st, type = 'l', main = 'source 3 t distributed', xlab = 't', ylab = 'value')
+
+```
+
+plot the created observations X laplace distributed
+```{r}
+
+set.seed(1234)
+A3 = matrix(runif(9, 0, 1), nrow = 3)
+Xt = A3%*%St
+
+Xt[1,] = Xt[1,] - mean(Xt[1,])
+Xt[2,] = Xt[2,] - mean(Xt[2,])
+Xt[3,] = Xt[3,] - mean(Xt[3,])
+
+
+plot(1:18000, Xt[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
+plot(1:18000, Xt[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
+plot(1:18000, Xt[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
+
+
+```
+
+plot S_hat noise source laplace distrubuted
+```{r}
+# natural Gradient
+t = 1
+eta_t = 0.25
+alpha = 1
+lambda = 0.91 #0.9102
+set.seed(9991)
+Wt = matrix(runif(9, 0, 1), ncol = 3)
+
+W_naturalt = unmixing_natural(Wt, Xt)
+S_hat_naturalt = W_naturalt%*%Xt
+
+cor(t(S_hat_natural3), t(S3))
+plot(1:18000, S_hat_naturalt[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_naturalt[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_naturalt[3,], type = 'l', main = 's_hat source 3 t distributed', xlab = 't', ylab = 'value')
+#play(audioSample(t(as.matrix(S_hat_natural3[1,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[2,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[3,])), rate = 8192))
+```
+
+
+
+
+6.2 Moments of univariate distributions
+
+Calculate the first 4 moments of the different random variables depending on the respective pa- rameters. In addition to providing the derivation (e.g. by using the characteristic function) fill the following table:
+
+Laplace Distriution
+```{r}
+M = matrix(1, ncol = 3, nrow = 4)
+
+b <- 1
+mean <- 0
+
+S_l <- rlaplace(nrow(s1),mean,b)
+
+n = 1
+
+L_X <- function(z){
+  l_x <- (function(x){
+          y <- ((1/(2*b))*exp((-1*abs(x-mean))/b))*(x^n)
+          })
+  return(l_x)
+}
+
+I_L_X <- function(z){integrate(L_X(z), lower = -100, upper = 100)$value}
+
+for(i in 1:nrow(M)){
+  n<-i
+  M[i,1] <- I_L_X(S_l)
+}
+
+M[,1]
+
+```
+
+Normal Distribution
+Create Matrix and function for moment calculation of normal distributon
++
+plot Moments for normal distribution and s3
+```{r}
+
+pi = 22/7
+sd = ((sd(as.matrix(s1)) + sd(as.matrix(s2)))/2)
+mean = 0
+
+n = 1
+
+P_X <- function(z){
+  p_x <- (function(x){
+          y <- (exp((-1*(x-mean)^2)/(2*sd*sd))/((2*pi*sd)^0.5))*(x^n)
+          })
+  return(p_x)
+}
+
+I_P_X <- function(z){integrate(P_X(z), lower = -100, upper = 100)$value}
+
+for(i in 1:nrow(M)){
+  n<-i
+  M[i,2] <- I_P_X(s3)
+}
+
+M[,2]
+
+```
+
+Uniform Distribution Moments
+with
+Probility density function depending on a(min) and b(max)
+```{r}
+
+a = 0
+b = 1
+S_uni <- runif(nrow(s1),a,b)
+
+
+n = 1
+
+U_X <- function(z){
+  u_x <- (function(x){
+          y <- (1/(b-a))*(x^n)
+          })
+  return(u_x)
+}
+
+I_U_X <- function(z){integrate(U_X(z), lower = a, upper = b)$value}
+
+for(i in 1:nrow(M)){
+  n<-i
+  M[i,3] <- I_U_X(S_uni)
+}
+
+M[,3]
+
+```
