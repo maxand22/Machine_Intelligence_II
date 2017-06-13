@@ -1,0 +1,321 @@
+---
+title: "HW6_MI2"
+author: "Benjamin Kolb"
+date: "13 Juni 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/Benni/Box Sync/_studium/2. Semester/04_Machine Intelligence II/Exercises/06")
+knitr::opts_chunk$set(error = TRUE)
+#load("test.RData")
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
+#https://stackoverflow.com/questions/11155182/is-there-a-way-to-knitr-markdown-straight-out-of-your-workspace-using-rstudio
+```
+
+Packages used
+```{r results='hide', message=FALSE, warning=FALSE}
+library(audio)
+library(VGAM)
+```
+
+Exercise 6.1: Natural Gradient
+
+(a)
+Initializsation of last Excersise
+```{r}
+s1 = read.table("sound1.dat", header=FALSE)
+s2 = read.table("sound2.dat", header=FALSE)
+
+S = t(as.matrix(data.frame(s1,s2)))
+
+set.seed(1234)
+A = matrix(runif(4, 0, 1), nrow = 2)
+
+X = A%*%S
+
+X[1,] = X[1,] - mean(X[1,])
+X[2,] = X[2,] - mean(X[2,])
+```
+
+Extention by lambda decreasing to zero and Plot of S_head
+```{r}
+# logistic function
+f = function(x){
+    return(1/(1+exp(-x)))
+}
+
+
+# natural Gradient
+t = 1
+eta_t = 0.7
+alpha = 1
+lambda = 0.9102 #0.9112
+set.seed(9991)
+W2 = matrix(runif(4, 0, 1), ncol = 2)
+
+
+unmixing_natural = function(W, X, n_steps = 18000){
+    
+    for(t in 1:n_steps){
+        eta_t = eta_t*lambda
+        
+        if(alpha > n_steps-12){
+           print(eta_t)
+        }
+        
+        x = X[,alpha]
+        
+        c <-  do.call(cbind, replicate(nrow(W), x, simplify=FALSE))
+        
+        f_wx = 1 - 2*f(W%*%c)
+        
+        wx = W%*%c
+        
+        k_delta = diag(nrow(W))
+        
+        
+        W_delta = eta_t*((k_delta + f_wx%*%wx)%*%W)
+        
+        W = W + W_delta
+        
+        alpha = alpha + 1
+        if(alpha == n_steps){
+            alpha = 1
+        }
+    }
+    return(W)
+}
+
+
+W_natural = unmixing_natural(W2, X)
+S_hat_natural = W_natural%*%X
+
+cor(t(S_hat_natural), t(S))
+plot(1:18000, S_hat_natural[1,], 
+     type = 'l', 
+     main = 'unmixed bird', 
+     xlab = 't', 
+     ylab = 'value')
+plot(1:18000, S_hat_natural[2,], 
+     type = 'l', 
+     main = 'unmixed halleluja', 
+     xlab = 't', 
+     ylab = 'value')
+
+```
+
+(b)
+Plot initialised the third source normal distributed
+```{r}
+set.seed(222)
+S_uni <- t(matrix(rnorm(nrow(s1),0,((sd(as.matrix(s1)) + sd(as.matrix(s2)))/2)),nrow = 1))
+S_uni = t(as.matrix(data.frame(s1,s2,S_uni)))
+
+plot(1:18000, S_uni, type = 'l', main = 'source 3 normal distributed', xlab = 't', ylab = 'value')
+```
+
+plot the created observations X
+```{r}
+
+set.seed(1234)
+A3 = matrix(runif(9, 0, 1), nrow = 3)
+X3 = A3%*%S_uni
+
+#centering
+X3[1,] = X3[1,] - mean(X3[1,])
+X3[2,] = X3[2,] - mean(X3[2,])
+X3[3,] = X3[3,] - mean(X3[3,])
+
+plot(1:18000, X3[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
+plot(1:18000, X3[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
+plot(1:18000, X3[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
+
+
+```
+
+
+Plot the unmixed Xb by modified natural gradient 3x3
+```{r}
+# natural Gradient
+t = 1
+eta_t = 0.3
+alpha = 1
+lambda = 0.9102 #0.9102
+set.seed(9991)
+W3 = matrix(runif(9, 0, 1), ncol = 3)
+
+W_natural3 = unmixing_natural(W3, X3)
+S_hat_natural3 = W_natural3%*%X3
+
+cor(t(S_hat_natural3), t(S_uni))
+plot(1:18000, S_hat_natural3[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_natural3[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_natural3[3,], type = 'l', main = 's_hat source 3 normal distributed', xlab = 't', ylab = 'value')
+#play(audioSample(t(as.matrix(S_hat_natural3[1,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[2,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[3,])), rate = 8192))
+```
+
+(c)
+```{r}
+
+set.seed(666666)
+st <- t(matrix(rt(nrow(s1),10),nrow = 1))
+St = t(as.matrix(data.frame(s1,s2,st)))
+
+plot(1:18000, st, type = 'l', main = 'source 3 t distributed', xlab = 't', ylab = 'value')
+
+```
+
+```{r}
+
+set.seed(1234)
+A3 = matrix(runif(9, 0, 1), nrow = 3)
+Xt = A3%*%St
+
+Xt[1,] = Xt[1,] - mean(Xt[1,])
+Xt[2,] = Xt[2,] - mean(Xt[2,])
+Xt[3,] = Xt[3,] - mean(Xt[3,])
+
+
+plot(1:18000, Xt[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
+plot(1:18000, Xt[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
+plot(1:18000, Xt[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
+
+
+```
+
+plot S_hat noise source laplace distrubuted
+```{r}
+# natural Gradient
+t = 1
+eta_t = 0.25
+alpha = 1
+lambda = 0.91 #0.9102
+set.seed(9991)
+Wt = matrix(runif(9, 0, 1), ncol = 3)
+
+W_naturalt = unmixing_natural(Wt, Xt)
+S_hat_naturalt = W_naturalt%*%Xt
+
+cor(t(S_hat_natural3), t(S_uni))
+plot(1:18000, S_hat_naturalt[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_naturalt[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
+plot(1:18000, S_hat_naturalt[3,], type = 'l', main = 's_hat source 3 t distributed', xlab = 't', ylab = 'value')
+#play(audioSample(t(as.matrix(S_hat_natural3[1,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[2,])), rate = 8192))
+#play(audioSample(t(as.matrix(S_hat_natural3[3,])), rate = 8192))
+```
+
+6.2: Moments of univariate distributions
+Laplace Distriution
+```{r}
+M = matrix(1, ncol = 3, nrow = 4)
+
+b <- 1
+mean <- 0
+
+S_l <- rlaplace(nrow(s1),mean,b)
+
+m1 <- mean(S_l)
+m2 <- sum((S_l-m1)^2)/length(S_l)
+m3 <- (sum((S_l-m1)^3)/18000)/((sum((S_l-m1)^2)/18000)^(3/2))
+(sum(S_l-mean)^3/18000)
+m4 <- (sum((S_l-mean)^4)/18000)/((sum((S_l-mean)^2)/18000)^(4/2))
+
+var(S_l)
+skewness(S_l)
+kurtosis(S_l)
+
+m1L <- mean(S_l)
+m2L <- sum((S_l-m1)^2)/length(S_l)
+m3L <- (sum((S_l-m1)^3)/18000)/((sum((S_l-m1)^2)/18000)^(3/2))
+m4L <- (sum((S_l-m1)^4)/18000)/((sum((S_l-m1)^2)/18000)^(4/2))
+
+```
+
+
+Normal Distribution
+Create Matrix and function for moment calculation of normal distributon
++
+plot Moments for normal distribution and S_uni
+```{r}
+
+pi = 22/7
+sd = ((sd(as.matrix(s1)) + sd(as.matrix(s2)))/2)
+mean = 0
+
+n = 1
+
+P_X <- function(z){
+  p_x <- (function(x){
+          y <- (exp((-1*(x-mean)^2)/(2*sd*sd))/((2*pi*sd)^0.5))*(x^n)
+          })
+  return(p_x)
+}
+
+I_P_X <- function(z){integrate(P_X(z), lower = -100, upper = 100)$value}
+
+for(i in 1:nrow(M)){
+  n<-i
+  M[i,2] <- I_P_X(S_uni)
+}
+
+M[,2]
+
+#S_uni
+
+m1n <- mean(S_uni)
+m2n <- sum((S_uni-m1n)^2)/length(S_uni)
+m3n <- (sum((S_uni-m1n)^3)/18000)/((sum((S_uni-m1n)^2)/18000)^(3/2))
+m4n <- (sum((S_uni-m1n)^4)/18000)/((sum((S_uni-m1n)^2)/18000)^(4/2))
+
+mean(S_uni)
+var(S_uni)
+skewness(S_uni)
+kurtosis(S_uni)
+
+```
+
+Uniform Distribution Moments
+with
+Probility density function depending on a(min) and b(max)
+```{r}
+
+a = 0
+b = 1
+S_uni <- runif(nrow(s1),a,b)
+
+
+n = 1
+
+U_X <- function(z){
+  u_x <- (function(x){
+          y <- (1/(b-a))*(x^n)
+          })
+  return(u_x)
+}
+
+I_U_X <- function(z){integrate(U_X(z), lower = a, upper = b)$value}
+
+for(i in 1:nrow(M)){
+  n<-i
+  M[i,3] <- I_U_X(S_uni)
+}
+
+m1u <- mean(S_uni)
+m2u <- sum((S_uni-m1u)^2)/length(S_uni)
+m3u <- (sum((S_uni-m1u)^3)/18000)/((sum((S_uni-m1u)^2)/18000)^(3/2))
+m4u <- (sum((S_uni-m1u)^4)/18000)/((sum((S_uni-m1u)^2)/18000)^(4/2))
+
+mean(S_uni)
+var(S_uni)
+skewness(S_uni)
+kurtosis(S_uni)
+
+M[,3]
+
+```
