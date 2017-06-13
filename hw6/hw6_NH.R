@@ -153,3 +153,40 @@ hist(proj3_w_rotated[2,], main = "Uniform s2 whitened & rotated", xlab = "")
 
 
 
+# compare histograms after rotation
+
+par(mfrow = c(2,2))
+
+min1 = which.min(k_after_rotation1[,1])
+min2 = which.min(k_after_rotation2[,1])
+min3 = which.min(k_after_rotation3[,1])
+
+R_min1 = rotation_matrix(thetas[min1])
+R_max1 = rotation_matrix(max1)
+R_min2 = rotation_matrix(thetas[min2])
+R_max2 = rotation_matrix(max2)
+R_min3 = rotation_matrix(thetas[min3])
+R_max3 = rotation_matrix(max3)
+
+proj1_w_rotated_max = R_max1 %*% t(proj1_w)
+proj2_w_rotated_max = R_max2 %*% t(proj2_w)
+proj3_w_rotated_max = R_max3 %*% t(proj3_w)
+
+proj1_w_rotated_min = R_min1 %*% t(proj1_w)
+proj2_w_rotated_min = R_min2 %*% t(proj2_w)
+proj3_w_rotated_min = R_min3 %*% t(proj3_w)
+
+hist(proj1_w_rotated_max[1,], main = "Normal s1 theta_max", xlab = "")
+hist(proj1_w_rotated_max[2,], main = "Normal s2 theta_max", xlab = "")
+hist(proj1_w_rotated_min[1,], main = "Normal s1 theta_min", xlab = "")
+hist(proj1_w_rotated_min[2,], main = "Normal s2 theta_min", xlab = "")
+
+hist(proj2_w_rotated_max[1,], main = "Laplace s1 theta_max", xlab = "")
+hist(proj2_w_rotated_max[2,], main = "Laplace s2 theta_max", xlab = "")
+hist(proj2_w_rotated_min[1,], main = "Laplace s1 theta_min", xlab = "")
+hist(proj2_w_rotated_min[2,], main = "Laplace s2 theta_min", xlab = "")
+
+hist(proj3_w_rotated_max[1,], main = "Uniform s1 theta_max", xlab = "")
+hist(proj3_w_rotated_max[2,], main = "Uniform s2 theta_max", xlab = "")
+hist(proj3_w_rotated_min[1,], main = "Uniform s1 theta_min", xlab = "")
+hist(proj3_w_rotated_min[2,], main = "Uniform s2 theta_min", xlab = "")
