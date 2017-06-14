@@ -1,14 +1,29 @@
 ---
-title: "hw6_ma"
-output: pdf_document
+title: "hw6_nonames2"
+output:
+  html_document: default
+  pdf_document: default
 ---
-setwd("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw5")
 
-```{r}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/")
+knitr::opts_chunk$set(error = TRUE)
+#load("test.RData")
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
+#https://stackoverflow.com/questions/11155182/is-there-a-way-to-knitr-markdown-straight-out-of-your-workspace-using-rstudio
+```
+
+```{r results='hide', message=FALSE, warning=FALSE}
 library(audio)
 
 #install.packages("VGAM")
 library(VGAM)
+
+#install.packages("R.matlab")
+library(R.matlab)
+library(ggplot2)
 ```
 
 
@@ -18,8 +33,8 @@ Extend your code from the previous problem sheet to get an ICA-learning scheme b
 Initializsation of last Excersise
 ```{r}
 # a)
-s1 = read.table("sound1.dat", header=FALSE)
-s2 = read.table("sound2.dat", header=FALSE)
+s1 = read.table("hw5/sound1.dat", header=FALSE)
+s2 = read.table("hw5/sound2.dat", header=FALSE)
 
 S = t(as.matrix(data.frame(s1,s2)))
 
@@ -91,6 +106,7 @@ W_natural = unmixing_natural(W2, X)
 S_hat_natural = W_natural%*%X
 
 cor(t(S_hat_natural), t(S))
+par(mfrow = c(1,2))
 plot(1:18000, S_hat_natural[1,], type = 'l', main = 'unmixed bird', xlab = 't', ylab = 'value')
 plot(1:18000, S_hat_natural[2,], type = 'l', main = 'unmixed halleluja', xlab = 't', ylab = 'value')
 
@@ -111,6 +127,7 @@ set.seed(222)
 s3 <- t(matrix(rnorm(nrow(s1),0,((sd(as.matrix(s1)) + sd(as.matrix(s2)))/2)),nrow = 1))
 S3 = t(as.matrix(data.frame(s1,s2,s3)))
 
+par(mfrow=c(1,1))
 plot(1:18000, s3, type = 'l', main = 'source 3 normal distributed', xlab = 't', ylab = 'value')
 
 ```
@@ -127,6 +144,7 @@ X3[1,] = X3[1,] - mean(X3[1,])
 X3[2,] = X3[2,] - mean(X3[2,])
 X3[3,] = X3[3,] - mean(X3[3,])
 
+par(mfrow = c(2,2))
 plot(1:18000, X3[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
 plot(1:18000, X3[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
 plot(1:18000, X3[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
@@ -149,6 +167,8 @@ W_natural3 = unmixing_natural(W3, X3)
 S_hat_natural3 = W_natural3%*%X3
 
 cor(t(S_hat_natural3), t(S3))
+
+par(mfrow=c(2,2))
 plot(1:18000, S_hat_natural3[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
 plot(1:18000, S_hat_natural3[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
 plot(1:18000, S_hat_natural3[3,], type = 'l', main = 's_hat source 3 normal distributed', xlab = 't', ylab = 'value')
@@ -167,6 +187,7 @@ set.seed(666666)
 st <- t(matrix(rt(nrow(s1),10),nrow = 1))
 St = t(as.matrix(data.frame(s1,s2,st)))
 
+par(mfrow=c(1,1))
 plot(1:18000, st, type = 'l', main = 'source 3 t distributed', xlab = 't', ylab = 'value')
 
 ```
@@ -182,7 +203,7 @@ Xt[1,] = Xt[1,] - mean(Xt[1,])
 Xt[2,] = Xt[2,] - mean(Xt[2,])
 Xt[3,] = Xt[3,] - mean(Xt[3,])
 
-
+par(mfrow=c(2,2))
 plot(1:18000, Xt[1,], type = 'l', main = 'observation 1', xlab = 't', ylab = 'value')
 plot(1:18000, Xt[2,], type = 'l', main = 'observation 2', xlab = 't', ylab = 'value')
 plot(1:18000, Xt[3,], type = 'l', main = 'observation 3', xlab = 't', ylab = 'value')
@@ -204,6 +225,8 @@ W_naturalt = unmixing_natural(Wt, Xt)
 S_hat_naturalt = W_naturalt%*%Xt
 
 cor(t(S_hat_natural3), t(S3))
+
+par(mfrow=c(2,2))
 plot(1:18000, S_hat_naturalt[1,], type = 'l', main = 's_hat bird', xlab = 't', ylab = 'value')
 plot(1:18000, S_hat_naturalt[2,], type = 'l', main = 's_hat halleluja', xlab = 't', ylab = 'value')
 plot(1:18000, S_hat_naturalt[3,], type = 'l', main = 's_hat source 3 t distributed', xlab = 't', ylab = 'value')
@@ -239,9 +262,10 @@ a = 0
 b = 1
 S_uni <- runif(nrow(s1),a,b)
 
-hist(S_l)
-hist(s3)
-hist(S_uni)
+par(mfrow=c(2,2))
+hist(S_l, main = "Histogram of Laplace Sample")
+hist(s3, main = "Historgram of Normal Distribution")
+hist(S_uni, main = "Histogram of Uniform Distribution")
 ```
 
 
@@ -308,6 +332,212 @@ the colums represent the distributions (Laplace, Normal, Uniform)
 
 the row represent the Moments, the first, the second (centered), the third (standardized), the fourth(standardized)
 ```{r}
-M[,]
+M
+```
+
+
+
+6.3
+The file distrib.mat contains three toy datasets (uniform, normal, laplacian), each 10000 samples of 2 sources. Do the following for each dataset (which can be read for example using Python with loadmat from scipy.io):
+
+```{r}
+l = readMat("hw6/distrib.mat")
+
+s1 = l[[1]]
+s2 = l[[2]]
+s3 = l[[3]]
+
+```
+
+
+(a) Apply the following mixing matrix A to the original data s:
+```{r}
+A = matrix(4:1, ncol = 2, byrow = TRUE)
+
+x1 = A%*%s1
+x2 = A%*%s2
+x3 = A%*%s3
+
+```
+
+
+(b) Center the mixed data to zero mean.
+```{r}
+x1[1,] = x1[1,] - mean(x1[1,])
+x1[2,] = x1[2,] - mean(x1[2,])
+
+x2[1,] = x2[1,] - mean(x2[1,])
+x2[2,] = x2[2,] - mean(x2[2,])
+
+x3[1,] = x3[1,] - mean(x3[1,])
+x3[2,] = x3[2,] - mean(x3[2,])
+
+```
+
+
+(c) Decorrelatethedatabyapplyingprincipalcomponentanalysis(PCA)andprojectthemonto the principal components (PCs).
+```{r}
+pcs1 = eigen(cov(t(x1)))$vectors
+pcs2 = eigen(cov(t(x2)))$vectors
+pcs3 = eigen(cov(t(x3)))$vectors
+
+evals1 = eigen(cov(t(x1)))$values
+evals2 = eigen(cov(t(x2)))$values
+evals3 = eigen(cov(t(x3)))$values
+
+proj1 = t(x1) %*% pcs1
+proj2 = t(x2) %*% pcs2
+proj3 = t(x3) %*% pcs3
+
+round(cov((proj1)), 5)
+round(cov((proj2)), 5)
+round(cov((proj3)), 5)
+```
+
+
+(d) Scale the data to unit variance in each PC direction (now the data is whitened or sphered).
+```{r}
+proj1_w = t(x1) %*% pcs1 %*% diag(evals1^(-.5))
+proj2_w = t(x2) %*% pcs2 %*% diag(evals2^(-.5))
+proj3_w = t(x3) %*% pcs3 %*% diag(evals3^(-.5))
+
+round(cov((proj1_w)), 5)
+round(cov((proj2_w)), 5)
+round(cov((proj3_w)), 5)
+```
+
+
+(e) Rotate the data by different angles θ and calculate the kurtosis1 empirically for each dimension:
+```{r}
+rotation_matrix = function(theta){
+    return(matrix(c(cos(theta), -sin(theta), sin(theta), cos(theta)), ncol = 2, byrow = TRUE))
+}
+
+thetas = seq(0, 2*pi, pi/50)
+
+kurt = function(x){
+    k = 1/length(x)*sum(x^4) - 3
+    return(k)
+}
+
+kurt_rotation = function(x, thetas){
+    
+    k_mat = matrix(nrow = length(thetas), ncol = 2)
+    i = 1
+    
+    if(nrow(x) > ncol(x)){
+        x = t(x)
+    }
+    
+    for(t in thetas){
+        R = rotation_matrix(t)
+        
+        x_theta = t(R%*%x)
+        k = apply(x_theta, 2, kurt)
+        
+        k_mat[i,] = k
+        i = i + 1
+        
+    }
+    return(k_mat)
+}
+
+k_after_rotation1 = kurt_rotation(proj1_w, thetas)
+k_after_rotation2 = kurt_rotation(proj2_w, thetas)
+k_after_rotation3 = kurt_rotation(proj3_w, thetas)
+```
+
+
+(f) Find the minimum and maximum kurtosis value for the first dimension and rotate the data accordingly.
+```{r}
+max1 = which.max(k_after_rotation1[,1])
+max2 = which.max(k_after_rotation2[,1])
+max3 = which.max(k_after_rotation3[,1])
+
+R1 = rotation_matrix(thetas[max1])
+R2 = rotation_matrix(thetas[max2])
+R3 = rotation_matrix(thetas[max3])
+
+proj1_w_rotated = R1 %*% t(proj1_w)
+proj2_w_rotated = R2 %*% t(proj2_w)
+proj3_w_rotated = R3 %*% t(proj3_w)
+
+```
+
+• Plot the original dataset (sources) and the mixed dataset after the steps (a), (b), (c), (d), and (f) as a scatter plot and display the respective marginal histograms. For step (e) plot the kurtosis value as a function of angle for each dimension.
+```{r}
+m <- rbind(c(1, 2), c(1, 3))
+layout(m, widths = 1)
+
+plot(s1[1,], s1[2,], col = alpha("blue", .3), pch = 16,
+     main = "Normal (original sources)", xlab = "s1", ylab = "s2")
+hist(s1[1,], main = "Normal s1 original", xlab = "")
+hist(s1[2,], main = "Normal s2 original", xlab = "")
+
+plot(proj1_w_rotated[1,], proj1_w_rotated[2,], col = alpha("blue", .3), pch = 16,
+     main = "Normal (whitened & rotated)", xlab = "s1", ylab = "s2")
+hist(proj1_w_rotated[1,], main = "Normal s1 whitened & rotated", xlab = "")
+hist(proj1_w_rotated[2,], main = "Normal s2 whitened & rotated", xlab = "")
+
+
+plot(s2[1,], s2[2,], col = alpha("blue", .3), pch = 16,
+     main = "Laplace (original sources)", xlab = "s1", ylab = "s2")
+hist(s2[1,], main = "Laplace s1 original", xlab = "")
+hist(s2[2,], main = "Laplace s2 original", xlab = "")
+
+plot(proj2_w_rotated[1,], proj2_w_rotated[2,], col = alpha("blue", .3), pch = 16,
+     main = "Laplace (whitened & rotated)", xlab = "s1", ylab = "s2")
+hist(proj2_w_rotated[1,], main = "Laplace s1 whitened & rotated", xlab = "")
+hist(proj2_w_rotated[2,], main = "Laplace s2 whitened & rotated", xlab = "")
+
+
+plot(s3[1,], s3[2,], col = alpha("blue", .3), pch = 16,
+     main = "Uniform (original sources)", xlab = "s1", ylab = "s2")
+hist(s3[1,], main = "Uniform s1 original", xlab = "")
+hist(s3[2,], main = "Uniform s2 original", xlab = "")
+
+plot(proj3_w_rotated[1,], proj3_w_rotated[2,], col = alpha("blue", .3), pch = 16,
+     main = "Uniform (whitened & rotated)", xlab = "s1", ylab = "s2")
+hist(proj3_w_rotated[1,], main = "Uniform s1 whitened & rotated", xlab = "")
+hist(proj3_w_rotated[2,], main = "Uniform s2 whitened & rotated", xlab = "")
+```
+
+• Compare the histograms after rotation by θmin and θmax for the different distributions.
+```{r}
+par(mfrow = c(2,2))
+
+min1 = which.min(k_after_rotation1[,1])
+min2 = which.min(k_after_rotation2[,1])
+min3 = which.min(k_after_rotation3[,1])
+
+R_min1 = rotation_matrix(thetas[min1])
+R_max1 = rotation_matrix(max1)
+R_min2 = rotation_matrix(thetas[min2])
+R_max2 = rotation_matrix(max2)
+R_min3 = rotation_matrix(thetas[min3])
+R_max3 = rotation_matrix(max3)
+
+proj1_w_rotated_max = R_max1 %*% t(proj1_w)
+proj2_w_rotated_max = R_max2 %*% t(proj2_w)
+proj3_w_rotated_max = R_max3 %*% t(proj3_w)
+
+proj1_w_rotated_min = R_min1 %*% t(proj1_w)
+proj2_w_rotated_min = R_min2 %*% t(proj2_w)
+proj3_w_rotated_min = R_min3 %*% t(proj3_w)
+
+hist(proj1_w_rotated_max[1,], main = "Normal s1 theta_max", xlab = "")
+hist(proj1_w_rotated_max[2,], main = "Normal s2 theta_max", xlab = "")
+hist(proj1_w_rotated_min[1,], main = "Normal s1 theta_min", xlab = "")
+hist(proj1_w_rotated_min[2,], main = "Normal s2 theta_min", xlab = "")
+
+hist(proj2_w_rotated_max[1,], main = "Laplace s1 theta_max", xlab = "")
+hist(proj2_w_rotated_max[2,], main = "Laplace s2 theta_max", xlab = "")
+hist(proj2_w_rotated_min[1,], main = "Laplace s1 theta_min", xlab = "")
+hist(proj2_w_rotated_min[2,], main = "Laplace s2 theta_min", xlab = "")
+
+hist(proj3_w_rotated_max[1,], main = "Uniform s1 theta_max", xlab = "")
+hist(proj3_w_rotated_max[2,], main = "Uniform s2 theta_max", xlab = "")
+hist(proj3_w_rotated_min[1,], main = "Uniform s1 theta_min", xlab = "")
+hist(proj3_w_rotated_min[2,], main = "Uniform s2 theta_min", xlab = "")
 
 ```
