@@ -68,8 +68,8 @@ N <- 6
 #assumption
 set.seed(509)
 W <- matrix(rnorm(N*N,0,1),N,N)
-diag(W) <- 0 
-W
+W[lower.tri(W)] = t(W)[lower.tri(W)]
+diag(W) = 0
 
 # set s randomly
 set.seed(123)
