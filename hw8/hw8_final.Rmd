@@ -107,6 +107,8 @@ EnergyM2 <- matrix(nrow = 1, ncol = t_max)
 
 # State Update Loop with M = 1 Iterations
 ```{r State Update Loop with M = 1 Iterations}
+
+start.time <- Sys.time()
 for(i in 1:t_max){
   if(i == 1){
     s <- s0
@@ -128,13 +130,39 @@ for(i in 1:t_max){
   EnergyM1[i] <- E(W, s)
 } #end annealing loop
 sM1 <- s
-plot(1:t_max, EnergyM1, type = 'l')
+
+
+end.time <- Sys.time()
+time.taken_M1 <- end.time - start.time
 
 ```
 
 
+Plot m1 iterations
+
+```{r plot M = 1 Iterations}
+energy_plot_data <- data.frame(t = 1:t_max, e1 = as.vector(EnergyM1))
+
+ggplot(energy_plot_data) + geom_line(aes(x = t, y = e1)) +
+    labs(x = "Iteration t", y = "Energy") + 
+    ggtitle("Energy by iteration step (M = 1)") + 
+    theme_bw()  + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key = element_rect(colour = "black"), 
+          plot.title = element_text(face="bold", hjust = .5)) +
+    theme(text = element_text(size = 16))
+    
+
+```
+
+
+
 # State Update Loop with M = 500 Iterations
 ```{r State Update Loop with M = 500 Iterations}
+
+start.time <- Sys.time()
+
 for(i in 1:t_max){
   if(i == 1){
     s <- s0
@@ -156,10 +184,27 @@ for(i in 1:t_max){
   EnergyM2[i] <- E(W, s)
 } #end annealing loop
 sM2 <- s
-plot(1:t_max, EnergyM2, type = 'l')
+
+end.time <- Sys.time()
+time.taken_M2 <- end.time - start.time
 
 ```
 
+
+# compare results
+```{r compare results}
+energy_plot_data$e2 = as.vector(EnergyM2)
+
+ggplot(energy_plot_data) + geom_line(aes(x = t, y = e2)) +
+    labs(x = "Iteration t", y = "Energy") + 
+    ggtitle("Energy by iteration step (M = 500)") + 
+    theme_bw()  + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key = element_rect(colour = "black"), 
+          plot.title = element_text(face="bold", hjust = .5)) +
+    theme(text = element_text(size = 16))
+```
 
 # compare results
 ```{r compare results}
@@ -185,6 +230,42 @@ ggplot() + geom_line(data = as.data.frame(t(EnergyM1)), aes(x = 1:t_max, y = V1,
 # M2 plot
 ggplot() + geom_line(data = as.data.frame(t(EnergyM2)), aes(x = 1:t_max, y = V1, color = "red")) + geom_line(data = as.data.frame(betas), aes(x = 1:t_max, y = 1/betas, color = "blue"))
 
+```
+
+# plots 8.1
+```{r plots 8.1}
+energy_tmp_plot_data = data.frame(t = rep(1:t_max, 2), 
+                                  l1 = c(as.vector(EnergyM1), as.vector(1/betas)),
+                                  l2 = c(as.vector(EnergyM2), as.vector(1/betas)),
+                                  group = factor(rep(c("Energy", "Temperature"), each = t_max)))
+
+ggplot(energy_tmp_plot_data) +
+    geom_line(aes(x = t, y = l1, color = group), size = 1) +
+    labs(x = "Iteration t", y = "Energy/Temperature") + 
+    ggtitle("Energy by iteration step (M = 1)") + 
+    theme_bw()  + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key = element_rect(colour = "black"), 
+          plot.title = element_text(face="bold", hjust = .5)) +
+    theme(text = element_text(size = 16)) + 
+    theme(legend.title=element_blank()) 
+
+
+    
+ggplot(energy_tmp_plot_data) +
+    geom_line(aes(x = t, y = l2, color = group), size = 1) +
+    labs(x = "Iteration t", y = "Energy/Temperature") + 
+    ggtitle("Energy by iteration step (M = 500)") + 
+    theme_bw()  + 
+    theme(panel.grid.major = element_blank(), 
+          panel.grid.minor = element_blank(),
+          legend.key = element_rect(colour = "black"), 
+          plot.title = element_text(face="bold", hjust = .5)) +
+    theme(text = element_text(size = 16)) + 
+    theme(legend.title=element_blank()) 
+
+
 # Matrix with all states of s1,...s6
 States <- rbind(rep(0,6), combos(6)$binary) # combos-function from package hier.part
 States[States == 0] <- -1
@@ -192,20 +273,23 @@ States[States == 0] <- -1
 E_all <- matrix(nrow = 64, ncol = 1)
 
 for(i in 1:length(E_all)){
-  E_all[i] <- E(W, States[i,])
+    E_all[i] <- E(W, States[i,])
 }
 
 # fill in Probability of chosing a state with fixed beta
 P_all <- matrix(nrow = 64, ncol = 1)
 Z <- 0
 for(i in 1:64){
-  Z <- Z + exp(-beta0*E(W, States[i,]))
+    Z <- Z + exp(-beta0*E(W, States[i,]))
 }
 for(i in 1:length(P_all)){
-  P_all[i] <- (exp(-beta0*E(W, States[i,])))/Z
+    P_all[i] <- (exp(-beta0*E(W, States[i,])))/Z
 }
-```
 
+# bar plot of Energy of all states and its Probability
+barplot(E_all, beside = TRUE, names.arg = 1:64)
+barplot(P_all, beside = TRUE, names.arg = 1:64)
+```
 
 
 ### 8.2 Simulated Annealing ###
@@ -213,13 +297,18 @@ for(i in 1:length(P_all)){
 beta, tau, tmax, state, e
 ```{r initalization 2}
 
-beta0 <- 0.1
-tau <- 1.1
+beta <- 0.01
+tau <- 1.01
 t_max <- 100
-e <- 1
+epsilon <- 0.001
+s = sample(c(-1,1), 6, replace = TRUE)
+N = length(s)
+e_diff = 1
+i = 1
+e_old = 0
 
-Energy <- matrix(nrow = 1, ncol = t_max)
-eold <- matrix(nrow = 1, ncol = N)
+temperature = rep(0, t_max)
+energy = rep(0, t_max)
 
 ```
 
@@ -227,36 +316,77 @@ eold <- matrix(nrow = 1, ncol = N)
 mean-field algorithm
 ```{r initalization}
 
-for(t in 1:t_max){
+start.time <- Sys.time()
 
-  if(t == 1){
-    s <- s0
-    beta <- beta0
-  }
-  
-     for(i in 1:N){
-       repeat{
-        mean_field_value <- mean_field(W, s, i)
-        s[i] <- state(beta, mean_field_value)
-        if(t == 1){eold[i] <- mean_field_value}
-        print(abs(mean_field_value - eold[i]) < e)
-        if(abs(mean_field_value - eold[i]) < e){
-          eold[i] <- mean_field_value
-          break}
-        } # end mean field annealing algorithm
-     }
-  beta <- beta*tau
-  
-  #Plot the temperature Tt = 1 and the energy Et over the iterations t = 0, . . . , tmax.
-  Energy[t] <- E(W,s)
-  
-} #end annealing loop
+for(t in 1:t_max){
+    
+    while(epsilon < e_diff){
+        #j = j+1
+        N_j = setdiff(1:N, i)
+        e_i = -sum(W[i, N_j] * s[N_j])
+        s[i] = tanh(-beta*e_i)
+        
+        e_diff = abs(e_i - e_old)
+        e_old = e_i
+        
+        if(i == 6){
+            i = 1
+        } else{
+            i = i+1
+        }
+        
+    }
+    beta = beta*tau
+    temperature[t] = 1/beta
+    energy[t] = E(W, s)
+}
+
+end.time <- Sys.time()
+time.taken_meanfield <- end.time - start.time
+
 ```
 
 
 
 Plot the temperature Tt = 1 and the energy Et over the iterations t = 0, . . . , tmax.
 ```{r plot}
-ggplot() + geom_line(data = as.data.frame(t(Energy)), aes(x = 1:t_max, y = V1, color = "red")) + geom_line(data = as.data.frame(betas), aes(x = 1:t_max, y = 1/betas, color = "blue"))
+plot(1:t_max, temperature, type = "l")
+plot(1:t_max, energy, type = "l")
+
+```
+
+
+Run time comparison for 
+
+mean field column 1:
+tau <- 1.01
+epsilon <- 0.001
+
+simulated M 500 column 2:
+tau <- 1.1
+simulated M 1 column 3:
+tau <- 1.1
+```{r plot}
+
+run_time_comparison <- matrix(data = c(time.taken_meanfield, time.taken_M2, time.taken_M1), nrow = 1, ncol = 3)
+
+run_time_comparison
+```
+
+
+Comparison of s
+mean field column 1:
+tau <- 1.01
+epsilon <- 0.001
+
+simulated M 500 column 2:
+tau <- 1.1
+
+simulated M 1 column 3:
+tau <- 1.1
+```{r plot}
+
+s_comparison <- matrix(data = c(s, sM2, sM1), nrow = 6, ncol = 3)
+s_comparison 
 
 ```
