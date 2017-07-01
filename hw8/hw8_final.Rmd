@@ -5,12 +5,6 @@ output:
   pdf_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/")
-knitr::opts_chunk$set(error = TRUE)
-knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
-```
 
 
 
@@ -67,15 +61,15 @@ state <- function(beta,mean_field_value){
 ```
 
 
-weight initalization and states
+#weight initalization and states
 ```{r weight initalization}
 N <- 6
 
 #assumption
 set.seed(509)
 W <- matrix(rnorm(N*N,0,1),N,N)
-diag(W) <- 0 
-W
+W[lower.tri(W)] = t(W)[lower.tri(W)]
+diag(W) = 0
 
 # set s randomly
 set.seed(123)
@@ -106,7 +100,7 @@ EnergyM2 <- matrix(nrow = 1, ncol = t_max)
 
 
 # State Update Loop with M = 1 Iterations
-```{r State Update Loop with M = 1 Iterations}
+```{r}
 
 start.time <- Sys.time()
 for(i in 1:t_max){
@@ -138,9 +132,9 @@ time.taken_M1 <- end.time - start.time
 ```
 
 
-Plot m1 iterations
+#Plot m1 iterations
 
-```{r plot M = 1 Iterations}
+```{r}
 energy_plot_data <- data.frame(t = 1:t_max, e1 = as.vector(EnergyM1))
 
 ggplot(energy_plot_data) + geom_line(aes(x = t, y = e1)) +
@@ -159,7 +153,7 @@ ggplot(energy_plot_data) + geom_line(aes(x = t, y = e1)) +
 
 
 # State Update Loop with M = 500 Iterations
-```{r State Update Loop with M = 500 Iterations}
+```{r}
 
 start.time <- Sys.time()
 
@@ -192,7 +186,7 @@ time.taken_M2 <- end.time - start.time
 
 
 # compare results
-```{r compare results}
+```{r}
 energy_plot_data$e2 = as.vector(EnergyM2)
 
 ggplot(energy_plot_data) + geom_line(aes(x = t, y = e2)) +
@@ -207,7 +201,7 @@ ggplot(energy_plot_data) + geom_line(aes(x = t, y = e2)) +
 ```
 
 # compare results
-```{r compare results}
+```{r}
 E(W, s0)
 E(W, sM1)
 E(W, sM2)
@@ -215,7 +209,7 @@ E(W, sM2)
 
 
 # plots 8.1
-```{r plots 8.1}
+```{r }
 # Plots
 # values for beta for every iteration
 betas <- matrix(nrow = t_max, ncol = 1)
@@ -224,16 +218,11 @@ for(i in 1:(t_max-1)){
   betas[i+1] <- betas[i]*tau
 }
 
-# M1 plot
-ggplot() + geom_line(data = as.data.frame(t(EnergyM1)), aes(x = 1:t_max, y = V1, color = "red")) + geom_line(data = as.data.frame(betas), aes(x = 1:t_max, y = 1/betas, color = "blue"))
-
-# M2 plot
-ggplot() + geom_line(data = as.data.frame(t(EnergyM2)), aes(x = 1:t_max, y = V1, color = "red")) + geom_line(data = as.data.frame(betas), aes(x = 1:t_max, y = 1/betas, color = "blue"))
 
 ```
 
-# plots 8.1
-```{r plots 8.1}
+
+```{r}
 energy_tmp_plot_data = data.frame(t = rep(1:t_max, 2), 
                                   l1 = c(as.vector(EnergyM1), as.vector(1/betas)),
                                   l2 = c(as.vector(EnergyM2), as.vector(1/betas)),
@@ -295,7 +284,7 @@ barplot(P_all, beside = TRUE, names.arg = 1:64)
 ### 8.2 Simulated Annealing ###
 
 beta, tau, tmax, state, e
-```{r initalization 2}
+```{r }
 
 beta <- 0.01
 tau <- 1.01
@@ -349,7 +338,7 @@ time.taken_meanfield <- end.time - start.time
 
 
 Plot the temperature Tt = 1 and the energy Et over the iterations t = 0, . . . , tmax.
-```{r plot}
+```{r}
 plot(1:t_max, temperature, type = "l")
 plot(1:t_max, energy, type = "l")
 
@@ -366,7 +355,7 @@ simulated M 500 column 2:
 tau <- 1.1
 simulated M 1 column 3:
 tau <- 1.1
-```{r plot}
+```{r}
 
 run_time_comparison <- matrix(data = c(time.taken_meanfield, time.taken_M2, time.taken_M1), nrow = 1, ncol = 3)
 
@@ -384,7 +373,7 @@ tau <- 1.1
 
 simulated M 1 column 3:
 tau <- 1.1
-```{r plot}
+```{r}
 
 s_comparison <- matrix(data = c(s, sM2, sM1), nrow = 6, ncol = 3)
 s_comparison 

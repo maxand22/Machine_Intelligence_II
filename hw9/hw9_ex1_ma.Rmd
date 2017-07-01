@@ -1,0 +1,313 @@
+---
+title: "nonames2_hw9"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw9/")
+knitr::opts_chunk$set(error = TRUE)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+```{r packages}
+
+library(ggplot2)
+
+#install.packages("RColorBrewer")
+library(RColorBrewer)
+
+library(gridExtra)
+
+#install.packages("cowplot")
+library(cowplot)
+
+install.packages("deldir", dependencies=TRUE)
+library(deldir)
+```
+
+
+In this problem set we will implement and apply the standard (batch) K-means algorithm, the online version, and the “soft” clustering procedures. The file cluster.dat contains a data set of p = 500 (2-dimensional) observations generated from four different Gaussians with four different means.
+```{r}
+
+X <- t(as.matrix((read.table("cluster.dat", header=FALSE))))
+ggplot(as.data.frame(X), aes(x=V1, y=V2))  + geom_point(shape=1)
+
+```
+
+
+9.1 K-means Clustering (3 points)
+Write a program that implements the standard version of K-means clustering and partitions the given data set into K clusters. Repeat the clustering procedure for different initializations of the prototypes and K = 2, 3, 4, 5, 6, 7, 8. Include the following steps:
+
+Initialization –
+• Set the initial prototypes wq randomly around the data set mean 
+```{r}
+#K <- 2
+#tmax <- 5
+
+wq_matrix <- function(X, K){
+  wq <- matrix(0, nrow = K, ncol = ncol(X))
+  set.seed(1234)
+  for(i in 1:K){
+      wq[i,] <- rnorm(ncol(X),mean(X))
+  }
+  return(wq)
+}
+
+#wq <- wq_matrix(X,K)
+```
+
+Optimization –
+Implement the k-means update (see lecture notes). Each iteration should contain the fol- lowing two steps
+• assign all datapoints to their closest prototype
+```{r}
+#calculate euclidian distrance, allgemein gültig for K > 2
+euclidian_distances <- function(X, wq, K){
+  euclidian_matrix <- matrix(0, nrow = nrow(X), ncol = K)
+
+  for(i in 1:nrow(X)){
+    for(j in 1:K){
+      euclidian_matrix[i,j] <- sqrt(sum((X[i,] - wq[j,] )^2))
+    }
+  }
+  return(euclidian_matrix)
+}
+
+#euclidian_distance_matrix <- euclidian_distances(X, wq, K)
+
+#mq assign all datapoints to their closest prototype where the columns represent the prototype and the row equals the data point, allgemein gültig for K > 2
+mq_matrix <- function(euclidian_distance_matrix){
+  mq <- matrix(0, nrow = nrow(euclidian_distance_matrix), ncol = ncol(euclidian_distance_matrix))
+  
+  for(i in 1:nrow(euclidian_distance_matrix)){
+    c <- which.min(euclidian_distance_matrix[i,])
+    mq[i,c] <- 1
+  }
+  return(mq)
+}
+
+#mq <- mq_matrix(euclidian_distance_matrix)
+
+```
+
+• re-compute the new positions of the prototypes for this assignment
+```{r}
+wq_update <- function(X, mq){
+  wq_u <- matrix(0, nrow = ncol(mq), ncol = ncol(X))
+
+  for (i in 1:ncol(mq)){
+    for(j in 1:ncol(X))
+    {
+      wq_u[i,j] <- (t(mq[,i])%*%(X[,j]))/(sum(mq[,i]))
+    }
+    
+  }
+  return(wq_u)
+}
+
+#wq_1 <- wq_update(X,mq)
+
+```
+
+compute the positions of points belonging to the prototypes for this assignment
+```{r}
+cluster_points <- function(X, K, mq){
+  cluster_points_list <- rep(list(matrix(1, nrow = nrow(X), ncol = X)),K)
+  
+  for(k in 1:K){
+    m <- matrix(mq[,k] , nrow(mq) , ncol = ncol(X) )
+    cluster_points_list[[k]] <- m*X
+  }
+  return(cluster_points_list)
+}
+
+#wq_1 <- wq_update(X,mq)
+
+```
+
+
+error function
+```{r}
+error_function <- function(X,wq,mq,K){
+  s <- matrix(0, 1,ncol = K)
+  
+  for(q in 1:K){
+    
+    for(a in 1:nrow(X)){
+      
+      s <- s + mq[a,q]*(abs(X[a,]-wq[q,])^2)
+      
+    }
+    
+  }
+  s <- (s/(2*nrow(X)))
+  return(s)
+}
+
+
+```
+
+program that implements the standard version of K-means clustering and partitions the given data set into K clusters
+```{r}
+k_means_clustering <- function(X, K, tmax){
+  
+  #before get started, save the solution for each iteration in memory
+  wq_memory <- rep(list(wq_matrix(X,K)),tmax+1)
+  euclidian_distance_matrix_memory <- rep(list(euclidian_distances(X, wq_matrix(X,K), K)),tmax)
+  mq_memory <- rep(list(matrix(1, nrow = nrow(X), ncol = K)),tmax)
+  
+  cluster_memory <- rep(list(matrix(1, nrow = nrow(X), ncol = K)),tmax)
+  error_memory <- rep(list(matrix(0, nrow = 1, ncol = ncol(X))),tmax)
+  
+  #Initialization –
+  #initial prototypes wq randomly around the data set mean
+  wq_memory[[1]] <- wq_matrix(X,K)
+  
+  #Optimization –
+  #Each iteration should contain the fol- lowing two steps
+  for(t in 1:tmax){
+    
+    #assign all datapoints to their closest prototype
+    
+    # - calculate euclidian distrance
+    euclidian_distance_matrix_memory[[t]] <- euclidian_distances(X, wq_memory[[t]], K)
+    # - mq assign all datapoints to their closest prototype
+    mq_memory[[t]] <- mq_matrix(euclidian_distance_matrix_memory[[t]])
+    
+    #re-compute the new positions of the prototypes for this assignment
+    wq_memory[[t+1]] <- wq_update(X,mq_memory[[t]])
+    
+    #calculate cluster points belonging to either one of the K Cluster
+    cluster_memory[[t]] <- cluster_points(X,K,mq_memory[[t]])
+    
+    error_memory[[t]] <- error_function(X, wq_memory[[t+1]], mq_memory[[t]], K)
+  }
+  
+  return_list <- list("wq_memory" = wq_memory, "euclidian_distance_matrix_memory" = euclidian_distance_matrix_memory, "mq_memory" = mq_memory, "cluster_memory" = cluster_memory, "error_memory" = error_memory)
+  return(return_list)
+}
+
+```
+
+K-means Clustering
+with tmax = 5
+and
+K = 2, 3, 4, 5, 6, 7, 8
+```{r}
+K_list <- list(2, 3, 4, 5, 6, 7, 8)
+tmax <- 5
+
+cluster_list <- rep(list(k_means_clustering(X,K_list[[1]],tmax)),length(K_list))
+
+for(k in 1:length(K_list)){
+  cluster_list[[k]] <- k_means_clustering(X,K_list[[k]],tmax)
+}
+
+#cluster point solution for the first k in list (here K =2) for the third iteration and the position of data points in the second cluster
+#head(cluster_list[[1]]$cluster_memory[[3]][[2]])
+head(as.data.frame(cluster_list[[1]]$cluster_memory[[3]][[2]]))
+```
+
+Visualization –
+(a) Visualize data points and prototypes for each iteration in a sequence of scatter plots.
+```{r}
+#For K = 2
+
+col <- c("seagreen1", "blue", "green", "yellow", "red", "darkgoldenrod1", "gray3", "olivedrab")
+
+plot_cluster <- function(cluster_list, K,t){
+
+  wq <- as.data.frame(cluster_list[[K]]$wq_memory[[t]])
+  
+  for(k in 1:length(cluster_list[[K]]$cluster_memory[[t]])){
+    s <- as.data.frame(cluster_list[[K]]$cluster_memory[[t]][[k]])
+    s <- s[!(apply(s, 1, function(y) any(y == 0))),]
+  
+    if(k == 1){
+      p <- ggplot() + geom_point(data = s, aes(x=V1, y=V2), color=col[k])
+    }else{
+      p <- p + geom_point(data = s, aes(x=V1, y=V2), color=col[k])
+    }
+  
+  }
+  
+  p <- p + geom_point(data = wq, aes(x=V1, y=V2),shape=17, size = 4, color='lightblue')
+  
+  return(p)
+  
+}
+  
+#pink <- plot_cluster(1,1)
+#pink
+
+plot_cluster_iteration <- function(K){
+  
+  K1<- plot_cluster(cluster_list, K,1)
+  K2<- plot_cluster(cluster_list, K,2)
+  K3<- plot_cluster(cluster_list, K,3)
+  K4<- plot_cluster(cluster_list, K,4)
+  K5<- plot_cluster(cluster_list, K,5)
+  
+  plot_grid(K1, K2,K3,K4,K5, labels=c("Iteration 1", "Iteration 2", "Iteration 3", "Iteration 4", "Iteration 5"), ncol = 2, nrow = 3)
+
+}
+
+plot_cluster_iteration(1)
+plot_cluster_iteration(2)
+plot_cluster_iteration(3)
+plot_cluster_iteration(4)
+plot_cluster_iteration(5)
+plot_cluster_iteration(6)
+plot_cluster_iteration(7)
+```
+
+
+Visualization –
+(b) Plot the error function E against the iteration number t
+```{r}
+xy <- (matrix(0, nrow = tmax,ncol = 2))
+
+for(k in 1:length(cluster_list)){
+  for(i in 1:length(cluster_list[[1]]$error_memory)){
+    xy[i,1] <- cluster_list[[k]]$error_memory[[i]][,1]
+    xy[i,2] <- cluster_list[[k]]$error_memory[[i]][,2]
+  }
+  xy <- as.data.frame(xy)
+  print(ggplot(data = xy)
+        + geom_line(aes(x=1:tmax, y=V1), color="seagreen1") 
+        + geom_line(aes(x=1:tmax, y=V2), color="darkgoldenrod1")
+        + labs(x = "iterations t", y = "Error")
+        + ggtitle(paste0("Error for K = ", k)))
+}
+
+#plot_grid(E2,E3,E4,E5,E6,E7,E8, labels=c("K 2", "K 3", "K 4", "K 5", "K 6","K 7","K 8"), ncol = 2, nrow = 3)
+
+```
+
+
+Visualization –
+(c) Create a plot (Voronoi-Tesselation) to show how the resulting solution assigns dif-
+ferent regions of input space (e.g. new data points x ∈ R2) to the different clusters.
+```{r}
+
+set.seed(2342)
+X_new_x <- rnorm(50, mean(X), 1)
+X_new_y <- rnorm(50, mean(X), 1)
+  
+for(k in 1:length(cluster_list)){
+    wq <- (matrix(0, nrow = length(cluster_list[[k]]$wq_memory[[tmax+1]]),ncol = 2))
+  
+    wq[,1] <- cluster_list[[k]]$wq_memory[[tmax+1]][,1]
+    wq[,2] <- cluster_list[[k]]$wq_memory[[tmax+1]][,2]
+    
+    vtess <- deldir(wq[,1], wq[,2])
+    plot(wq[,1], wq[,2], type="n", asp=1)
+    points(wq[,1], wq[,2], pch=20, col="lightblue", cex=0.5)
+    points(X_new_x, X_new_y, pch=20, col="red", cex=0.5)
+    points(X[,1], X[,2], pch=20, col="seagreen1", cex=0.5)
+    plot(vtess, wlines="tess", wpoints="none", number=FALSE, add=TRUE, lty=1)
+    
+}
+
+
+```
