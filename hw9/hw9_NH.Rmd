@@ -22,7 +22,6 @@ cluster_data <- as.data.frame(t(cluster_data))
 
 
 # a) 
-
 ```{r}
 
 # number of initial prototypes
@@ -45,7 +44,6 @@ gamma = 0.001
 
 
 # b)
-
 ```{r}
 
 a_probs = matrix(nrow = nrow(cluster_data), ncol = K)
@@ -87,7 +85,6 @@ while(any(diff > gamma)){
 
 
 # c) 
-
 ```{r}
 cols = c("#313695", "#238b45", "#f0027f", "#abd9e9", "#fdae61", "#beaed4", "#ffff99", "#a50026")
 
