@@ -41,7 +41,7 @@ library(colorRamps)
 # 2.1 a)
 
 # load data
-pcaData2d <- read.csv("Ex2/pca-data-2d.txt", sep = "", header = FALSE)
+pcaData2d <- read.csv("/Users/maxand22/Google Drive/Humboldt/4. Semester/Machine Intelligence II/Machine_Intelligence_II/hw2/pca-data-2d.txt", sep = "", header = FALSE)
 
 # calcualte mean matrix
 n <- nrow(pcaData2d)
